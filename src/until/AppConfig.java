@@ -9,12 +9,12 @@ public class AppConfig {
     // Chế độ hoạt động
     public static final String MODE = "ONLINE_ONLY"; // ONLINE_ONLY hoặc HYBRID
     
-    // API Server URL
+    // API Server URL  
     // Development: http://localhost:8080/api
-    // Production: https://studentmanagementappbackend-2.onrender.com/api
+    // Production: https://studentmanagementappbackend-3.onrender.com/api
     public static final String API_BASE_URL = System.getenv("API_URL") != null 
         ? System.getenv("API_URL") 
-        : "https://studentmanagementappbackend-3.onrender.com/api";
+        : "https://studentmanagementappbackend-3.onrender.com/api";  // ← BACK TO PRODUCTION
     
     // Timeout settings
     public static final int CONNECTION_TIMEOUT = 10000; // 10 seconds
