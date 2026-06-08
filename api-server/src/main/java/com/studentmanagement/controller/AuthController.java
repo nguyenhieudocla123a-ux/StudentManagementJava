@@ -35,18 +35,19 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String username = credentials.get("username");
-        String password = credentials.get("password");
-        
-        // Validate input
-        if (username == null || username.isEmpty()) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Tên đăng nhập không được để trống");
-            return ResponseEntity.status(401).body(response);
-        }
+        try {
+            String username = credentials.get("username");
+            String password = credentials.get("password");
+            
+            // Validate input
+            if (username == null || username.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Tên đăng nhập không được để trống");
+                return ResponseEntity.status(401).body(response);
+            }
 
-        System.out.println("🔐 Login attempt: username=" + username);
+            System.out.println("🔐 Login attempt: username=" + username);
         
         // Tìm tài khoản trong DB
         TaiKhoan taiKhoan = taiKhoanRepository.findById(username).orElse(null);
@@ -135,8 +136,16 @@ public class AuthController {
         taiKhoan.setOnlineStatus("Online");
         taiKhoanRepository.save(taiKhoan);
         
-        System.out.println("✅ Login thành công: " + username + " | Role: " + taiKhoan.getLoaiNguoiDung());
-        return ResponseEntity.ok(response);
+            System.out.println("✅ Login thành công: " + username + " | Role: " + taiKhoan.getLoaiNguoiDung());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi đăng nhập: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Lỗi hệ thống: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
     }
     
     @PostMapping("/register")

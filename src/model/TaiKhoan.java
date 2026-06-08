@@ -5,12 +5,17 @@ public class TaiKhoan {
     private String matKhau;
     private String loaiNguoiDung; // "SinhVien", "GiangVien", "Admin"
     private String onlineStatus;  // "Online", "Offline"
+    // Các trường bổ sung từ API login (tuỳ loại người dùng)
+    private String maSV;   // chỉ khi loaiNguoiDung = "SinhVien"
+    private String maGV;   // chỉ khi loaiNguoiDung = "GiangVien"
+    private String maQTV;  // chỉ khi loaiNguoiDung = "Admin"
+    private String hoTen;
 
     // Constructor mặc định
     public TaiKhoan() {
     }
 
-    // Constructor có tham số
+    // Constructor có tham số cơ bản
     public TaiKhoan(String tenDangNhap, String matKhau, String loaiNguoiDung, String onlineStatus) {
         this.tenDangNhap = tenDangNhap;
         this.matKhau = matKhau;
@@ -31,11 +36,24 @@ public class TaiKhoan {
     public String getOnlineStatus() { return onlineStatus; }
     public void setOnlineStatus(String onlineStatus) { this.onlineStatus = onlineStatus; }
 
+    public String getMaSV() { return maSV; }
+    public void setMaSV(String maSV) { this.maSV = maSV; }
+
+    public String getMaGV() { return maGV; }
+    public void setMaGV(String maGV) { this.maGV = maGV; }
+
+    public String getMaQTV() { return maQTV; }
+    public void setMaQTV(String maQTV) { this.maQTV = maQTV; }
+
+    public String getHoTen() { return hoTen; }
+    public void setHoTen(String hoTen) { this.hoTen = hoTen; }
+
     @Override
     public String toString() {
         return "TaiKhoan{" +
                 "tenDangNhap='" + tenDangNhap + '\'' +
                 ", loaiNguoiDung='" + loaiNguoiDung + '\'' +
+                ", hoTen='" + hoTen + '\'' +
                 ", onlineStatus='" + onlineStatus + '\'' +
                 '}';
     }

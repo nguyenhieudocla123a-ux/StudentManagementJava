@@ -1,6 +1,6 @@
 package View;
 
-import dao.TaiKhoanDao;
+import service.AuthService;
 import model.TaiKhoan;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
@@ -17,7 +17,7 @@ public class Login extends JFrame implements ActionListener {
     private JPasswordField txtPassword;
     private JButton btnLogin, btnExit;
     private TaiKhoan taiKhoan;
-    private TaiKhoanDao check_tk;
+    private AuthService authService;
 
     private final Color PRIMARY_COLOR = new Color(25, 118, 210);
     private final Color ACCENT_COLOR = new Color(94, 53, 177);
@@ -198,7 +198,6 @@ public class Login extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        check_tk = new TaiKhoanDao();
 
         if (src == btnLogin) {
             String username = txtUsername.getText().trim();
@@ -211,52 +210,50 @@ public class Login extends JFrame implements ActionListener {
                 return;
             }
 
-            try {
-                taiKhoan = check_tk.kiemTraDangNhap(username, password);
-                if (taiKhoan == null) {
-                    String errorMsg = check_tk.getLastErrorMessage();
-                    JOptionPane.showMessageDialog(this,
-                            (errorMsg != null && !errorMsg.isEmpty()) ? errorMsg : "Tên đăng nhập hoặc mật khẩu không chính xác!",
-                            "Lỗi", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    // Tự động reset phiên làm việc mà không cần hỏi người dùng
-                    if (check_tk.kiemTraTaiKhoanDangOnline(username)) {
-                        check_tk.capNhatTrangThaiOffline(username);
-                    }
-                    check_tk.capNhatTrangThaiOnline(username);
-                    taiKhoan.setOnlineStatus("Online");
-
-                    // LẤY JWT TOKEN TỪ API SERVER
-                    try {
-                        String jsonBody = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
-                        String response = until.ApiClient.post("/auth/login", jsonBody);
+            // Disable button để tránh click nhiều lần
+            btnLogin.setEnabled(false);
+            btnLogin.setText("Đang đăng nhập...");
+            
+            // Chạy trong background thread
+            new Thread(() -> {
+                try {
+                    System.out.println("🔄 Bắt đầu đăng nhập: " + username);
+                    
+                    authService = new AuthService();
+                    taiKhoan = authService.kiemTraDangNhap(username, password);
+                    
+                    // Quay về UI thread để hiển thị kết quả
+                    SwingUtilities.invokeLater(() -> {
+                        btnLogin.setEnabled(true);
+                        btnLogin.setText("Đăng nhập");
                         
-                        // Dùng Gson để parse JSON response
-                        JsonObject jsonResponse = JsonParser.parseString(response).getAsJsonObject();
-                        if (jsonResponse.has("success") && jsonResponse.get("success").getAsBoolean()) {
-                            if (jsonResponse.has("token")) {
-                                String token = jsonResponse.get("token").getAsString();
-                                until.ApiClient.setJwtToken(token);
-                                System.out.println("✅ Token được lưu thành công: " + token.substring(0, Math.min(30, token.length())) + "...");
-                            }
+                        if (taiKhoan == null) {
+                            String errorMsg = authService.getLastErrorMessage();
+                            System.err.println("❌ Đăng nhập thất bại: " + errorMsg);
+                            JOptionPane.showMessageDialog(this,
+                                    (errorMsg != null && !errorMsg.isEmpty()) ? errorMsg : "Tên đăng nhập hoặc mật khẩu không chính xác!",
+                                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            System.out.println("✅ Đăng nhập thành công: " + username + " | Role: " + taiKhoan.getLoaiNguoiDung());
+                            
+                            JOptionPane.showMessageDialog(this,
+                                    "Đăng nhập thành công!\nXin chào " + username,
+                                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                            
+                            navigateToUserInterface();
                         }
-                    } catch (Exception exApi) {
-                        System.err.println("⚠️ Lỗi khi lấy token: " + exApi.getMessage());
-                        exApi.printStackTrace();
-                        // Bỏ qua lỗi - tiếp tục đăng nhập bình thường
-                    }
-                    
-                    JOptionPane.showMessageDialog(this,
-                            "Đăng nhập thành công!\nXin chào " + username,
-                            "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                    
-                    navigateToUserInterface();
+                    });
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    SwingUtilities.invokeLater(() -> {
+                        btnLogin.setEnabled(true);
+                        btnLogin.setText("Đăng nhập");
+                        JOptionPane.showMessageDialog(this,
+                                "Lỗi kết nối: " + ex.getMessage(),
+                                "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    });
                 }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
-                        "Lỗi: " + ex.getMessage(),
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
+            }).start();
 
         } else if (src == btnExit) {
             int confirm = JOptionPane.showConfirmDialog(this,

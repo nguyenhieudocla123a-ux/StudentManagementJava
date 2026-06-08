@@ -47,7 +47,7 @@ public class SinhVien {
         this.hoTen = hoTen;
     }
 
-    public String isGioiTinh() {
+    public String getGioiTinh() {
         return gioiTinh;
     }
 

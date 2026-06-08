@@ -1,66 +1,154 @@
 package service;
 
-import dao.MonHocDao;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import model.MonHoc;
 import until.ApiClient;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service xử lý Môn học - thay thế MonHocDao
+ */
 public class MonHocService {
-
-    private final MonHocDao dao;
-
-    public MonHocService() {
-        this.dao = new MonHocDao();
-    }
-
-    public void ensureServerRunning() {
-        if (!ApiClient.isServerRunning()) {
-            throw new RuntimeException("❌ Không thể kết nối đến API Server!");
-        }
-    }
-
-    public List<MonHoc> getAll() {
-        ensureServerRunning();
-        return dao.getAllMonHoc();
-    }
-
-    public MonHoc getById(String maMH) {
-        ensureServerRunning();
-        return dao.getMonHocById(maMH);
-    }
-
-    public boolean add(MonHoc mh) {
-        ensureServerRunning();
-        validateRequired(mh.getMaMH(), mh.getTenMH());
-        if (dao.kiemTraMonHocTonTai(mh.getMaMH())) {
-            throw new RuntimeException("Mã môn học '" + mh.getMaMH() + "' đã tồn tại!");
-        }
-        return dao.themMonHoc(mh);
-    }
-
-    public boolean update(MonHoc mh) {
-        ensureServerRunning();
-        validateRequired(mh.getMaMH(), mh.getTenMH());
-        return dao.capNhatMonHoc(mh);
-    }
-
-    public boolean delete(String maMH) {
-        ensureServerRunning();
-        return dao.xoaMonHoc(maMH);
-    }
-
-    public List<MonHoc> getByKhoa(String maKhoa) {
-        ensureServerRunning();
-        return dao.getMonHocByKhoa(maKhoa);
-    }
-
-    private void validateRequired(String... fields) {
-        for (String f : fields) {
-            if (f == null || f.trim().isEmpty()) {
-                throw new RuntimeException("Vui lòng nhập đầy đủ thông tin bắt buộc!");
+    
+    /**
+     * Lấy tất cả môn học
+     */
+    public List<MonHoc> getAllMonHoc() {
+        try {
+            String response = ApiClient.get("/subjects");
+            JsonArray dataArray = JsonParser.parseString(response).getAsJsonArray();
+            List<MonHoc> list = new ArrayList<>();
+            for (JsonElement element : dataArray) {
+                list.add(parseMonHoc(element.getAsJsonObject()));
             }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return new ArrayList<>();
+    }
+    
+    /**
+     * Lấy môn học theo mã
+     */
+    public MonHoc getMonHocById(String maMH) {
+        try {
+            String response = ApiClient.get("/subjects/" + maMH);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return parseMonHoc(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Tìm kiếm môn học
+     */
+    public List<MonHoc> searchMonHoc(String keyword) {
+        try {
+            String response = ApiClient.get("/subjects/search?keyword=" + keyword);
+            JsonArray dataArray = JsonParser.parseString(response).getAsJsonArray();
+            List<MonHoc> list = new ArrayList<>();
+            for (JsonElement element : dataArray) {
+                list.add(parseMonHoc(element.getAsJsonObject()));
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+    
+    /**
+     * Thêm môn học mới
+     */
+    public boolean themMonHoc(MonHoc mh) {
+        try {
+            String jsonBody = toJson(mh);
+            String response = ApiClient.post("/subjects", jsonBody);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return json.get("success").getAsBoolean();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Cập nhật môn học
+     */
+    public boolean capNhatMonHoc(MonHoc mh) {
+        try {
+            String jsonBody = toJson(mh);
+            String response = ApiClient.put("/subjects/" + mh.getMaMH(), jsonBody);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return json.get("success").getAsBoolean();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Xóa môn học
+     */
+    public boolean xoaMonHoc(String maMH) {
+        try {
+            String response = ApiClient.delete("/subjects/" + maMH);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return json.get("success").getAsBoolean();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean kiemTraMonHocDuocSuDung(String maMH) {
+        try {
+            String response = ApiClient.get("/classes/subject/" + maMH);
+            JsonArray dataArray = JsonParser.parseString(response).getAsJsonArray();
+            return !dataArray.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Parse JSON sang MonHoc object
+     */
+    private MonHoc parseMonHoc(JsonObject json) {
+        MonHoc mh = new MonHoc();
+        mh.setMaMH(getStringOrNull(json, "maMH"));
+        mh.setTenMH(getStringOrNull(json, "tenMH"));
+        
+        if (json.has("soTinChi") && !json.get("soTinChi").isJsonNull()) {
+            mh.setSoTinChi(json.get("soTinChi").getAsInt());
+        }
+        
+        mh.setMaKhoa(getStringOrNull(json, "maKhoa"));
+        return mh;
+    }
+    
+    /**
+     * Convert MonHoc sang JSON string
+     */
+    private String toJson(MonHoc mh) {
+        return String.format(
+            "{\"maMH\":\"%s\",\"tenMH\":\"%s\",\"soTinChi\":%d,\"maKhoa\":\"%s\"}",
+            mh.getMaMH(), mh.getTenMH(), mh.getSoTinChi(), mh.getMaKhoa()
+        );
+    }
+    
+    private String getStringOrNull(JsonObject json, String key) {
+        if (json.has(key) && !json.get(key).isJsonNull()) {
+            return json.get(key).getAsString();
+        }
+        return null;
     }
 }

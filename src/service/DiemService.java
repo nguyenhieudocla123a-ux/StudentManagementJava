@@ -1,123 +1,254 @@
 package service;
 
-import dao.DiemDao;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import model.Diem;
+import model.LopHocPhan;
 import until.ApiClient;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * Service xử lý Điểm - thay thế DiemDao
+ */
 public class DiemService {
-
-    private final DiemDao dao;
-
-    public DiemService() {
-        this.dao = new DiemDao();
-    }
-
-    public void ensureServerRunning() {
-        if (!ApiClient.isServerRunning()) {
-            throw new RuntimeException("❌ Không thể kết nối đến API Server!");
+    
+    public List<Diem> getAllDiem() {
+        try {
+            String response = ApiClient.get("/grades");
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            
+            if (json.get("success").getAsBoolean()) {
+                JsonArray dataArray = json.getAsJsonArray("data");
+                List<Diem> list = new ArrayList<>();
+                for (JsonElement element : dataArray) {
+                    list.add(parseDiem(element.getAsJsonObject()));
+                }
+                return list;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return new ArrayList<>();
     }
-
-    public ArrayList<Diem> getBySinhVien(String maSV) {
-        ensureServerRunning();
-        return dao.getDiemBySinhVien(maSV);
-    }
-
-    public ArrayList<Diem> getByLop(String maLop) {
-        ensureServerRunning();
-        return dao.getDiemByLop(maLop);
-    }
-
-    public boolean nhapDiem(Diem d) {
-        ensureServerRunning();
-        validateDiem(d);
-        if (d.getDiemQuaTrinh() == null && d.getDiemGiuaKy() == null && d.getDiemCuoiKy() == null) {
-            throw new RuntimeException("Vui lòng nhập ít nhất một điểm!");
+    
+    public Diem getDiemById(int id) {
+        try {
+            String response = ApiClient.get("/grades/" + id);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            
+            if (json.get("success").getAsBoolean()) {
+                return parseDiem(json.getAsJsonObject("data"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return dao.nhapDiem(d);
+        return null;
     }
-
-    public boolean capNhatDiem(Diem d) {
-        ensureServerRunning();
-        validateDiem(d);
-        return dao.capNhatDiem(d);
+    
+    public List<Diem> getDiemBySinhVien(String maSV) {
+        try {
+            String response = ApiClient.get("/grades/student/" + maSV);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            
+            if (json.get("success").getAsBoolean()) {
+                JsonArray dataArray = json.getAsJsonArray("data");
+                List<Diem> list = new ArrayList<>();
+                for (JsonElement element : dataArray) {
+                    list.add(parseDiem(element.getAsJsonObject()));
+                }
+                return list;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
-
-    public boolean xoaDiem(String maSV) {
-        ensureServerRunning();
-        return dao.xoaDiem(maSV);
+    
+    public List<Diem> getDiemByLop(String maLop) {
+        try {
+            String response = ApiClient.get("/grades/class/" + maLop);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            
+            if (json.get("success").getAsBoolean()) {
+                JsonArray dataArray = json.getAsJsonArray("data");
+                List<Diem> list = new ArrayList<>();
+                for (JsonElement element : dataArray) {
+                    list.add(parseDiem(element.getAsJsonObject()));
+                }
+                return list;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
-
-    public Diem getBySinhVienAndLop(String maSV, String maLop) {
-        return dao.getDiemByMaSVAndMaLop(maSV, maLop);
-    }
-
-    public ArrayList<Diem> getByMonHoc(String maMon) {
-        return dao.getDiemByMonHoc(maMon);
-    }
-
-    public ArrayList<Diem> getBySinhVienTheoKyNam(String maSV, String hocKy, String namHoc) {
-        return dao.getDiemBySinhVienTheoKyNam(maSV, hocKy, namHoc);
-    }
-
-    public ArrayList<String> getHocKyBySinhVien(String maSV) {
-        return dao.getHocKyBySinhVien(maSV);
-    }
-
-    public ArrayList<String> getNamHocBySinhVien(String maSV) {
-        return dao.getNamHocBySinhVien(maSV);
-    }
-
-    public float tinhDiemTK(float diemQT, float diemGK, float diemCK) {
-        return diemQT * 0.2f + diemGK * 0.3f + diemCK * 0.5f;
-    }
-
-    public String tinhDiemChu(float diem) {
-        if (diem >= 8.5) return "A";
-        else if (diem >= 8.0) return "B+";
-        else if (diem >= 7.0) return "B";
-        else if (diem >= 6.5) return "C+";
-        else if (diem >= 5.5) return "C";
-        else if (diem >= 5.0) return "D+";
-        else if (diem >= 4.0) return "D";
-        else return "F";
-    }
-
-    public String tinhXepLoai(float diem) {
-        if (diem >= 8.5) return "Giỏi";
-        else if (diem >= 7.0) return "Khá";
-        else if (diem >= 5.5) return "Trung bình";
-        else if (diem >= 4.0) return "Yếu";
-        else return "Kém";
-    }
-
-    public double tinhGPA(List<Diem> listDiem) {
-        if (listDiem == null || listDiem.isEmpty()) return 0.0;
-        double tongDiem = 0;
-        int count = 0;
-        for (Diem d : listDiem) {
-            if (d.getDiemTongKet() != null) {
-                tongDiem += d.getDiemTongKet();
-                count++;
+    
+    public Diem getDiemByMaSVAndMaLop(String maSV, String maLop) {
+        List<Diem> allDiem = getDiemByLop(maLop);
+        for (Diem d : allDiem) {
+            if (d.getMaSV().equals(maSV)) {
+                return d;
             }
         }
-        return count == 0 ? 0.0 : tongDiem / count;
+        return null;
     }
-
-    public boolean kiemTraDiemHopLe(Float diemQT, Float diemGK, Float diemCK) {
-        return kiemTraDiem(diemQT) && kiemTraDiem(diemGK) && kiemTraDiem(diemCK);
-    }
-
-    private boolean kiemTraDiem(Float diem) {
-        return diem == null || (diem >= 0 && diem <= 10);
-    }
-
-    private void validateDiem(Diem d) {
-        if (!kiemTraDiemHopLe(d.getDiemQuaTrinh(), d.getDiemGiuaKy(), d.getDiemCuoiKy())) {
-            throw new RuntimeException("Điểm phải nằm trong khoảng 0-10!");
+    
+    /**
+     * Lọc điểm theo học kỳ và năm học.
+     * @param hocKy  "Tất cả" để bỏ qua lọc học kỳ
+     * @param namHoc "Tất cả" để bỏ qua lọc năm học
+     */
+    public List<Diem> getDiemBySinhVienTheoKyNam(String maSV, String hocKy, String namHoc) {
+        List<Diem> allDiem = getDiemBySinhVien(maSV);
+        // Nếu cả hai đều "Tất cả" → trả về toàn bộ
+        if ("Tất cả".equals(hocKy) && "Tất cả".equals(namHoc)) {
+            return allDiem;
         }
+        List<Diem> filtered = new ArrayList<>();
+        LopHocPhanService lhpService = new LopHocPhanService();
+        for (Diem d : allDiem) {
+            LopHocPhan lhp = lhpService.getLopHocPhanByMaLop(d.getMaLop());
+            if (lhp == null) continue;
+            boolean hocKyMatch = "Tất cả".equals(hocKy) || hocKy.equals(lhp.getHocKy());
+            boolean namHocMatch = "Tất cả".equals(namHoc) || namHoc.equals(lhp.getNamHoc());
+            if (hocKyMatch && namHocMatch) {
+                filtered.add(d);
+            }
+        }
+        return filtered;
+    }
+    
+    public List<Integer> getHocKyBySinhVien(String maSV) {
+        List<Diem> allDiem = getDiemBySinhVien(maSV);
+        Set<Integer> hocKySet = new HashSet<>();
+        LopHocPhanService lhpService = new LopHocPhanService();
+        for (Diem d : allDiem) {
+            LopHocPhan lhp = lhpService.getLopHocPhanByMaLop(d.getMaLop());
+            if (lhp != null && lhp.getHocKy() != null) {
+                try {
+                    hocKySet.add(Integer.parseInt(lhp.getHocKy()));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return new ArrayList<>(hocKySet);
+    }
+    
+    public List<Integer> getNamHocBySinhVien(String maSV) {
+        List<Diem> allDiem = getDiemBySinhVien(maSV);
+        Set<Integer> namHocSet = new HashSet<>();
+        LopHocPhanService lhpService = new LopHocPhanService();
+        for (Diem d : allDiem) {
+            LopHocPhan lhp = lhpService.getLopHocPhanByMaLop(d.getMaLop());
+            if (lhp != null && lhp.getNamHoc() != null) {
+                try {
+                    namHocSet.add(Integer.parseInt(lhp.getNamHoc()));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return new ArrayList<>(namHocSet);
+    }
+    
+    public boolean nhapDiem(Diem diem) {
+        try {
+            String jsonBody = toJson(diem);
+            String response = ApiClient.post("/grades", jsonBody);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return json.get("success").getAsBoolean();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean capNhatDiem(Diem diem) {
+        try {
+            String jsonBody = toJson(diem);
+            String response = ApiClient.put("/grades/" + diem.getId(), jsonBody);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return json.get("success").getAsBoolean();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean xoaDiem(int maDiem) {
+        try {
+            String response = ApiClient.delete("/grades/" + maDiem);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return json.get("success").getAsBoolean();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public String getTenMonHocByMaLop(String maLop) {
+        // Lấy từ LopHocPhan và MonHoc
+        LopHocPhanService lhpService = new LopHocPhanService();
+        MonHocService mhService = new MonHocService();
+        
+        var lhp = lhpService.getLopHocPhanByMaLop(maLop);
+        if (lhp != null) {
+            var mh = mhService.getMonHocById(lhp.getMaMH());
+            if (mh != null) {
+                return mh.getTenMH();
+            }
+        }
+        return "";
+    }
+    
+    private Diem parseDiem(JsonObject json) {
+        Diem diem = new Diem();
+        
+        if (json.has("id") && !json.get("id").isJsonNull()) {
+            diem.setId(json.get("id").getAsInt());
+        }
+        
+        diem.setMaSV(getStringOrNull(json, "maSV"));
+        diem.setMaLop(getStringOrNull(json, "maLop"));
+        
+        if (json.has("diemQuaTrinh") && !json.get("diemQuaTrinh").isJsonNull()) {
+            diem.setDiemQuaTrinh(json.get("diemQuaTrinh").getAsFloat());
+        }
+        if (json.has("diemGiuaKy") && !json.get("diemGiuaKy").isJsonNull()) {
+            diem.setDiemGiuaKy(json.get("diemGiuaKy").getAsFloat());
+        }
+        if (json.has("diemCuoiKy") && !json.get("diemCuoiKy").isJsonNull()) {
+            diem.setDiemCuoiKy(json.get("diemCuoiKy").getAsFloat());
+        }
+        if (json.has("diemTongKet") && !json.get("diemTongKet").isJsonNull()) {
+            diem.setDiemTongKet(json.get("diemTongKet").getAsFloat());
+        }
+        diem.setDiemChu(getStringOrNull(json, "diemChu"));
+        diem.setXepLoai(getStringOrNull(json, "xepLoai"));
+        
+        return diem;
+    }
+    
+    private String toJson(Diem diem) {
+        return String.format(
+            "{\"maSV\":\"%s\",\"maLop\":\"%s\",\"diemQuaTrinh\":%.1f,\"diemGiuaKy\":%.1f,\"diemCuoiKy\":%.1f,\"diemTongKet\":%.1f,\"diemChu\":\"%s\",\"xepLoai\":\"%s\"}",
+            diem.getMaSV(), diem.getMaLop(), 
+            diem.getDiemQuaTrinh() != null ? diem.getDiemQuaTrinh() : 0.0, 
+            diem.getDiemGiuaKy() != null ? diem.getDiemGiuaKy() : 0.0, 
+            diem.getDiemCuoiKy() != null ? diem.getDiemCuoiKy() : 0.0, 
+            diem.getDiemTongKet() != null ? diem.getDiemTongKet() : 0.0,
+            diem.getDiemChu() != null ? diem.getDiemChu() : "",
+            diem.getXepLoai() != null ? diem.getXepLoai() : ""
+        );
+    }
+    
+    private String getStringOrNull(JsonObject json, String key) {
+        if (json.has(key) && !json.get(key).isJsonNull()) {
+            return json.get(key).getAsString();
+        }
+        return null;
     }
 }

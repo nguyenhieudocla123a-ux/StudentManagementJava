@@ -1,76 +1,148 @@
 package service;
 
-import dao.DangKiLopDao;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import model.DangKiLop;
 import until.ApiClient;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service xử lý Đăng ký lớp - thay thế DangKiLopDao
+ */
 public class DangKyLopService {
-
-    private final DangKiLopDao dao;
-
-    public DangKyLopService() {
-        this.dao = new DangKiLopDao();
+    
+    private String lastErrorMessage = "";
+    
+    public List<DangKiLop> getAllDangKy() {
+        try {
+            String response = ApiClient.get("/registrations");
+            JsonArray dataArray = JsonParser.parseString(response).getAsJsonArray();
+            List<DangKiLop> list = new ArrayList<>();
+            for (JsonElement element : dataArray) {
+                list.add(parseDangKiLop(element.getAsJsonObject()));
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
-
-    public void ensureServerRunning() {
-        if (!ApiClient.isServerRunning()) {
-            throw new RuntimeException("❌ Không thể kết nối đến API Server!");
+    
+    public List<DangKiLop> getLopDaDangKy(String maSV) {
+        try {
+            String response = ApiClient.get("/registrations/student/" + maSV);
+            JsonArray dataArray = JsonParser.parseString(response).getAsJsonArray();
+            List<DangKiLop> list = new ArrayList<>();
+            for (JsonElement element : dataArray) {
+                list.add(parseDangKiLop(element.getAsJsonObject()));
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+    
+    public List<DangKiLop> getSVDaDangKy(String maLop) {
+        try {
+            String response = ApiClient.get("/registrations/class/" + maLop);
+            JsonArray dataArray = JsonParser.parseString(response).getAsJsonArray();
+            List<DangKiLop> list = new ArrayList<>();
+            for (JsonElement element : dataArray) {
+                list.add(parseDangKiLop(element.getAsJsonObject()));
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+    
+    public boolean kiemTraDaDangKy(String maSV, String maLop) {
+        try {
+            String response = ApiClient.get("/registrations/" + maSV + "/" + maLop);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            return json.has("maSV") && !json.get("maSV").isJsonNull();
+        } catch (Exception e) {
+            return false;
         }
     }
-
-    public List<DangKiLop> getAll() {
-        ensureServerRunning();
-        return dao.getAllDangKy();
+    
+    public int demSoLuongDangKy(String maLop) {
+        List<DangKiLop> list = getSVDaDangKy(maLop);
+        return list.size();
     }
-
-    public List<DangKiLop> getChiTietDangKy() {
-        return dao.getChiTietDangKy();
+    
+    public boolean dangKyLop(DangKiLop dkl) {
+        try {
+            String jsonBody = toJson(dkl);
+            String response = ApiClient.post("/registrations", jsonBody);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            
+            if (json.get("success").getAsBoolean()) {
+                lastErrorMessage = "";
+                return true;
+            } else {
+                lastErrorMessage = json.get("message").getAsString();
+                return false;
+            }
+        } catch (Exception e) {
+            lastErrorMessage = "Lỗi kết nối: " + e.getMessage();
+            return false;
+        }
     }
-
-    public boolean dangKy(String maSV, String maLop) {
-        ensureServerRunning();
-        return dao.dangKyLop(new DangKiLop(maSV, maLop));
-    }
-
+    
     public boolean huyDangKy(String maSV, String maLop) {
-        ensureServerRunning();
-        return dao.huyDangKy(maSV, maLop);
+        try {
+            String response = ApiClient.delete("/registrations/" + maSV + "/" + maLop);
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            
+            if (json.get("success").getAsBoolean()) {
+                lastErrorMessage = "";
+                return true;
+            } else {
+                lastErrorMessage = json.get("message").getAsString();
+                return false;
+            }
+        } catch (Exception e) {
+            lastErrorMessage = "Lỗi kết nối: " + e.getMessage();
+            return false;
+        }
     }
-
-    public boolean isDaDangKy(String maSV, String maLop) {
-        ensureServerRunning();
-        return dao.kiemTraDaDangKy(maSV, maLop);
+    
+    public String getLastErrorMessage() {
+        return lastErrorMessage;
     }
-
-    public List<String> getLopDaDangKy(String maSV) {
-        ensureServerRunning();
-        return dao.getLopDaDangKy(maSV);
+    
+    /**
+     * Kiểm tra sinh viên có đang đăng ký lớp nào không
+     */
+    public boolean kiemTraSinhVienCoDangKy(String maSV) {
+        List<DangKiLop> list = getLopDaDangKy(maSV);
+        return !list.isEmpty();
     }
-
-    public List<String> getSVDaDangKy(String maLop) {
-        ensureServerRunning();
-        return dao.getSVDaDangKy(maLop);
+    
+    private DangKiLop parseDangKiLop(JsonObject json) {
+        DangKiLop dkl = new DangKiLop();
+        dkl.setMaSV(getStringOrNull(json, "maSV"));
+        dkl.setMaLop(getStringOrNull(json, "maLop"));
+        dkl.setNgayDangKy(getStringOrNull(json, "ngayDangKy"));
+        return dkl;
     }
-
-    public int getSoLuongDangKy(String maLop) {
-        ensureServerRunning();
-        return dao.demSoLuongDangKy(maLop);
+    
+    private String toJson(DangKiLop dkl) {
+        return String.format("{\"maSinhVien\":\"%s\",\"maLopHocPhan\":\"%s\"}", 
+            dkl.getMaSV(), dkl.getMaLop());
     }
-
-    public boolean xoaTatCaDangKy(String maSV) {
-        ensureServerRunning();
-        return dao.xoaTatCaDangKy(maSV);
-    }
-
-    public boolean isSinhVienDaDangKy(String maSV) {
-        ensureServerRunning();
-        return dao.kiemTraSinhVienDaDangKy(maSV);
-    }
-
-    public String getLastError() {
-        return dao.getLastErrorMessage();
+    
+    private String getStringOrNull(JsonObject json, String key) {
+        if (json.has(key) && !json.get(key).isJsonNull()) {
+            return json.get(key).getAsString();
+        }
+        return null;
     }
 }

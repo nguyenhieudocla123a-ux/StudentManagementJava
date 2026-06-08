@@ -7,8 +7,8 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import dao.SinhvienDao;
-import dao.DiemDao;
+import service.SinhVienService;
+import service.DiemService;
 import model.SinhVien;
 import model.Diem;
 
@@ -75,8 +75,8 @@ public class Mail {
     public static void sendResultToStudent(String maSV, String maLop, String tenMonHoc, 
                                          double diemQT, double diemGK, double diemCK, 
                                          double diemTK, String diemChu, String xepLoai) throws Exception {
-        SinhvienDao svDao = new SinhvienDao();
-        SinhVien sv = svDao.getSinhVienById(maSV);
+        SinhVienService svService = new SinhVienService();
+        SinhVien sv = svService.getSinhVienById(maSV);
         
         if (sv == null || sv.getEmail() == null || sv.getEmail().trim().isEmpty()) {
             throw new Exception("Không tìm thấy email của sinh viên " + maSV);
@@ -93,21 +93,21 @@ public class Mail {
      * Gửi email kết quả cho tất cả sinh viên trong lớp
      */
     public static int sendResultToAllStudentsInClass(String maLop) {
-        DiemDao diemDao = new DiemDao();
-        SinhvienDao svDao = new SinhvienDao();
+        DiemService diemService = new DiemService();
+        SinhVienService svService = new SinhVienService();
         int successCount = 0;
         int totalCount = 0;
 
         try {
-            List<Diem> danhSachDiem = diemDao.getDiemByMaLop(maLop);
+            List<Diem> danhSachDiem = diemService.getDiemByLop(maLop);
             totalCount = danhSachDiem.size();
 
             for (Diem diem : danhSachDiem) {
                 try {
-                    SinhVien sv = svDao.getSinhVienById(diem.getMaSV());
+                    SinhVien sv = svService.getSinhVienById(diem.getMaSV());
                     if (sv != null && sv.getEmail() != null && !sv.getEmail().trim().isEmpty()) {
                         
-                        String tenMonHoc = diemDao.getTenMonHocByMaLop(maLop);
+                        String tenMonHoc = diemService.getTenMonHocByMaLop(maLop);
                         
                         sendResultToStudent(diem.getMaSV(), maLop, tenMonHoc,
                                           diem.getDiemQuaTrinh(), diem.getDiemGiuaKy(), 

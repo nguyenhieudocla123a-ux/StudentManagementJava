@@ -14,7 +14,7 @@ public class AppConfig {
     // Production: https://studentmanagementappbackend-2.onrender.com/api
     public static final String API_BASE_URL = System.getenv("API_URL") != null 
         ? System.getenv("API_URL") 
-        : "https://studentmanagementappbackend-2.onrender.com/api";
+        : "https://studentmanagementappbackend-3.onrender.com/api";
     
     // Timeout settings
     public static final int CONNECTION_TIMEOUT = 10000; // 10 seconds

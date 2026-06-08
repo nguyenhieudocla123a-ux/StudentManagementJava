@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
  * Sử dụng HttpURLConnection - không cần thêm thư viện ngoài
  */
 public class ApiClient {
-    private static final String BASE_URL = "https://studentmanagementappbackend-2.onrender.com/api";
+        private static final String BASE_URL = AppConfig.getApiUrl();
     private static final java.nio.file.Path TOKEN_PATH = java.nio.file.Paths.get(System.getProperty("user.home"), ".duanjava_token");
     private static String jwtToken = null;
 
@@ -67,7 +67,7 @@ public class ApiClient {
     
     /**
      * Gửi GET request
-     * @param endpoint Đường dẫn API (vd: "/students", "/teachers/GV001")
+     * @param endpoint Đường dẫn API (vd: "/api/students", "/api/teachers/GV001")
      * @return JSON response dạng String
      */
     public static String get(String endpoint) throws IOException {
@@ -152,7 +152,9 @@ public class ApiClient {
         
         // errorStream có thể null nếu server không trả về body (vd: 404 không có body)
         if (is == null) {
-            return "{\"success\":false,\"message\":\"HTTP " + responseCode + "\"}";
+            String errorMsg = "{\"success\":false,\"message\":\"HTTP " + responseCode + "\"}";
+            System.err.println("❌ Response is null. Code: " + responseCode);
+            return errorMsg;
         }
         
         try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
@@ -161,7 +163,12 @@ public class ApiClient {
             while ((line = br.readLine()) != null) {
                 response.append(line);
             }
-            return response.toString();
+            String result = response.toString();
+            
+            // DEBUG: In ra response để xem
+            System.out.println("📥 HTTP " + responseCode + " Response: " + result);
+            
+            return result;
         }
     }
     
@@ -170,7 +177,7 @@ public class ApiClient {
      */
     public static boolean isServerRunning() {
         try {
-            get("/students");
+            get("/api/students");
             return true;
         } catch (IOException e) {
             return false;
@@ -194,7 +201,7 @@ public class ApiClient {
             System.out.println("✓ Server is running!");
             
             try {
-                String response = get("/students");
+                String response = get("/api/students");
                 System.out.println("Response: " + response);
             } catch (IOException e) {
                 System.err.println("Error: " + e.getMessage());

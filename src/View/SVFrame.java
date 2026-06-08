@@ -1,6 +1,6 @@
 package View;
 
-import dao.*;
+import service.*;
 import model.*;
 
 import javax.swing.*;
@@ -24,13 +24,13 @@ public class SVFrame extends JFrame {
     // Tables
     private JTable tblLopCoTheDangKy, tblLopDaDangKy, tblDiem;
 
-    // DAOs
-    private LopHocPhanDao lopHocPhanDao;
-    private SinhvienDao sinhVienDao;
-    private DiemDao diemDao;
-    private DangKiLopDao dangKiLopDao;
-    private MonHocDao monHocDao;
-    private GiangvienDao giangVienDao;
+    // Services - thay thế DAOs
+    private LopHocPhanService lopHocPhanService;
+    private SinhVienService sinhVienService;
+    private DiemService diemService;
+    private DangKyLopService dangKyLopService;
+    private MonHocService monHocService;
+    private GiangVienService giangVienService;
 
     // Colors - Màu sắc nhất quán với hệ thống
     private final Color PRIMARY_COLOR = new Color(25, 118, 210);
@@ -110,16 +110,16 @@ public class SVFrame extends JFrame {
     }
 
     private void initializeDAOs() {
-        lopHocPhanDao = new LopHocPhanDao();
-        sinhVienDao = new SinhvienDao();
-        diemDao = new DiemDao();
-        dangKiLopDao = new DangKiLopDao();
-        monHocDao = new MonHocDao();
-        giangVienDao = new GiangvienDao();
+        lopHocPhanService = new LopHocPhanService();
+        sinhVienService = new SinhVienService();
+        diemService = new DiemService();
+        dangKyLopService = new DangKyLopService();
+        monHocService = new MonHocService();
+        giangVienService = new GiangVienService();
     }
 
     private void loadSinhVienInfo() {
-        this.sinhVien = sinhVienDao.getSinhVienById(taiKhoan.getTenDangNhap());
+        this.sinhVien = sinhVienService.getSinhVienById(taiKhoan.getTenDangNhap());
     }
 
     private void createSidebar() {
@@ -219,9 +219,9 @@ public class SVFrame extends JFrame {
 
     private void updateUserStatusToOffline() {
         if (taiKhoan != null) {
-            TaiKhoanDao taiKhoanDao = new TaiKhoanDao();
+            AuthService authService = new AuthService();
             try {
-                taiKhoanDao.capNhatTrangThaiOffline(taiKhoan.getTenDangNhap());
+                authService.capNhatTrangThaiOffline(taiKhoan.getTenDangNhap());
             } catch (Exception ex) {
                 System.err.println("Lỗi khi cập nhật trạng thái: " + ex.getMessage());
             }
@@ -443,7 +443,7 @@ public class SVFrame extends JFrame {
 
         addInfoRow("Mã sinh viên:", sinhVien.getMaSV(), infoPanel);
         addInfoRow("Họ tên:", sinhVien.getHoTen(), infoPanel);
-        addInfoRow("Giới tính:", sinhVien.isGioiTinh(), infoPanel);
+        addInfoRow("Giới tính:", sinhVien.getGioiTinh(), infoPanel);
         addInfoRow("Ngày sinh:", sinhVien.getNgaySinh(), infoPanel);
         addInfoRow("Email:", sinhVien.getEmail() != null ? sinhVien.getEmail() : "Chưa có", infoPanel);
         addInfoRow("Số điện thoại:", sinhVien.getSoDienThoai() != null ? sinhVien.getSoDienThoai() : "Chưa có", infoPanel);
@@ -498,7 +498,7 @@ public class SVFrame extends JFrame {
         JComboBox<String> cboGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
         cboGioiTinh.setFont(NORMAL_FONT);
         cboGioiTinh.setPreferredSize(new Dimension(300, 40));
-        cboGioiTinh.setSelectedItem(sinhVien.isGioiTinh());
+        cboGioiTinh.setSelectedItem(sinhVien.getGioiTinh());
         formPanel.add(cboGioiTinh, gbc);
         
         // Email
@@ -594,7 +594,7 @@ public class SVFrame extends JFrame {
             sinhVien.setDiaChi(txtDiaChi.getText().trim().isEmpty() ? null : txtDiaChi.getText().trim());
             
             // Lưu vào database
-            if (sinhVienDao.capNhatSinhVien(sinhVien)) {
+            if (sinhVienService.capNhatSinhVien(sinhVien)) {
                 JOptionPane.showMessageDialog(this,
                         "Cập nhật thông tin thành công!",
                         "Thành công",
@@ -781,8 +781,8 @@ public class SVFrame extends JFrame {
                 return;
             }
 
-            // Đăng ký - DAO sẽ kiểm tra tất cả điều kiện
-            boolean ketQua = dangKiLopDao.dangKyLop(new DangKiLop(maSV, maLop));
+            // Đăng ký - Service sẽ kiểm tra tất cả điều kiện
+            boolean ketQua = dangKyLopService.dangKyLop(new DangKiLop(maSV, maLop));
             
             if (ketQua) {
                 JOptionPane.showMessageDialog(this, 
@@ -792,8 +792,8 @@ public class SVFrame extends JFrame {
                 loadLopCoTheDangKyData();
                 loadLopDaDangKyData();
             } else {
-                // Lấy thông báo lỗi chi tiết từ DAO
-                String errorMessage = dangKiLopDao.getLastErrorMessage();
+                // Lấy thông báo lỗi chi tiết từ Service
+                String errorMessage = dangKyLopService.getLastErrorMessage();
                 
                 if (errorMessage == null || errorMessage.isEmpty()) {
                     errorMessage = "Đăng ký lớp học phần thất bại!\nVui lòng thử lại hoặc liên hệ quản trị viên.";
@@ -892,12 +892,12 @@ public class SVFrame extends JFrame {
                     "Xác nhận hủy đăng ký", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
             if (confirm == JOptionPane.YES_OPTION) {
-                if (dangKiLopDao.huyDangKy(maSV, maLop)) {
+                if (dangKyLopService.huyDangKy(maSV, maLop)) {
                     JOptionPane.showMessageDialog(this, "Hủy đăng ký thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                     loadLopDaDangKyData();
                     loadLopCoTheDangKyData();
                 } else {
-                    String errorMsg = dangKiLopDao.getLastErrorMessage();
+                    String errorMsg = dangKyLopService.getLastErrorMessage();
                     JOptionPane.showMessageDialog(this, 
                             (errorMsg != null && !errorMsg.isEmpty()) ? errorMsg : "Hủy đăng ký thất bại!", 
                             "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -946,8 +946,8 @@ public class SVFrame extends JFrame {
         
         // Load thêm danh sách học kỳ từ database
         if (sinhVien != null) {
-            List<String> listHocKy = diemDao.getHocKyBySinhVien(sinhVien.getMaSV());
-            for (String hk : listHocKy) {
+            List<Integer> listHocKy = diemService.getHocKyBySinhVien(sinhVien.getMaSV());
+            for (Integer hk : listHocKy) {
                 boolean exists = false;
                 for (int i = 0; i < cboHocKy.getItemCount(); i++) {
                     if (cboHocKy.getItemAt(i).equals(hk)) {
@@ -956,7 +956,7 @@ public class SVFrame extends JFrame {
                     }
                 }
                 if (!exists) {
-                    cboHocKy.addItem(hk);
+                    cboHocKy.addItem(hk.toString());
                 }
             }
         }
@@ -978,8 +978,8 @@ public class SVFrame extends JFrame {
         
         // Load thêm danh sách năm học từ database
         if (sinhVien != null) {
-            List<String> listNamHoc = diemDao.getNamHocBySinhVien(sinhVien.getMaSV());
-            for (String nh : listNamHoc) {
+            List<Integer> listNamHoc = diemService.getNamHocBySinhVien(sinhVien.getMaSV());
+            for (Integer nh : listNamHoc) {
                 boolean exists = false;
                 for (int i = 0; i < cboNamHoc.getItemCount(); i++) {
                     if (cboNamHoc.getItemAt(i).equals(nh)) {
@@ -988,7 +988,7 @@ public class SVFrame extends JFrame {
                     }
                 }
                 if (!exists) {
-                    cboNamHoc.addItem(nh);
+                    cboNamHoc.addItem(nh.toString());
                 }
             }
         }
@@ -1135,18 +1135,18 @@ public class SVFrame extends JFrame {
         if (tblLopCoTheDangKy != null && sinhVien != null) {
             DefaultTableModel model = (DefaultTableModel) tblLopCoTheDangKy.getModel();
             model.setRowCount(0);
-            List<LopHocPhan> listLHP = lopHocPhanDao.getAllLopHocPhan();
+            List<LopHocPhan> listLHP = lopHocPhanService.getAllLopHocPhan();
             String maSV = sinhVien.getMaSV();
             String maKhoaSV = sinhVien.getMaKhoa();
 
             for (LopHocPhan lhp : listLHP) {
                 // CHỈ HIỂN THỊ LỚP ĐANG MỞ, CHƯA ĐĂNG KÝ, VÀ THUỘC KHOA SINH VIÊN
-                if (lhp.isDangMo() && !dangKiLopDao.kiemTraDaDangKy(maSV, lhp.getMaLop())) {
-                    MonHoc mh = monHocDao.getMonHocById(lhp.getMaMH());
+                if (lhp.isDangMo() && !dangKyLopService.kiemTraDaDangKy(maSV, lhp.getMaLop())) {
+                    MonHoc mh = monHocService.getMonHocById(lhp.getMaMH());
 
                     if (mh != null && mh.getMaKhoa().equals(maKhoaSV)) {
-                        GiangVien gv = giangVienDao.getGiangVienById(lhp.getMaGV());
-                        int siSoHienTai = dangKiLopDao.demSoLuongDangKy(lhp.getMaLop());
+                        GiangVien gv = giangVienService.getGiangVienById(lhp.getMaGV());
+                        int siSoHienTai = dangKyLopService.demSoLuongDangKy(lhp.getMaLop());
                         String siSo = siSoHienTai + "/" + lhp.getSiSoToiDa();
                         
                         // Hiển thị trạng thái lớp: Mở/Đóng
@@ -1183,14 +1183,15 @@ public class SVFrame extends JFrame {
             DefaultTableModel model = (DefaultTableModel) tblLopDaDangKy.getModel();
             model.setRowCount(0);
             String maSV = sinhVien.getMaSV();
-            List<String> listMaLop = dangKiLopDao.getLopDaDangKy(maSV);
+            List<DangKiLop> listDangKy = dangKyLopService.getLopDaDangKy(maSV);
 
-            for (String maLop : listMaLop) {
-                LopHocPhan lhp = lopHocPhanDao.getLopHocPhanByMaLop(maLop);
+            for (DangKiLop dk : listDangKy) {
+                String maLop = dk.getMaLop();
+                LopHocPhan lhp = lopHocPhanService.getLopHocPhanByMaLop(maLop);
                 if (lhp != null) {
-                    MonHoc mh = monHocDao.getMonHocById(lhp.getMaMH());
-                    GiangVien gv = giangVienDao.getGiangVienById(lhp.getMaGV());
-                    int siSoHienTai = dangKiLopDao.demSoLuongDangKy(maLop);
+                    MonHoc mh = monHocService.getMonHocById(lhp.getMaMH());
+                    GiangVien gv = giangVienService.getGiangVienById(lhp.getMaGV());
+                    int siSoHienTai = dangKyLopService.demSoLuongDangKy(maLop);
                     String siSo = siSoHienTai + "/" + lhp.getSiSoToiDa();
 
                     // Kiểm tra trạng thái lớp
@@ -1215,12 +1216,12 @@ public class SVFrame extends JFrame {
             DefaultTableModel model = (DefaultTableModel) tblDiem.getModel();
             model.setRowCount(0);
             String maSV = sinhVien.getMaSV();
-            List<Diem> listDiem = diemDao.getDiemBySinhVien(maSV);
+            List<Diem> listDiem = diemService.getDiemBySinhVien(maSV);
 
             for (Diem diem : listDiem) {
-                LopHocPhan lhp = lopHocPhanDao.getLopHocPhanByMaLop(diem.getMaLop());
+                LopHocPhan lhp = lopHocPhanService.getLopHocPhanByMaLop(diem.getMaLop());
                 if (lhp != null) {
-                    MonHoc mh = monHocDao.getMonHocById(lhp.getMaMH());
+                    MonHoc mh = monHocService.getMonHocById(lhp.getMaMH());
 
                     model.addRow(new Object[]{
                             diem.getMaLop(),
@@ -1246,7 +1247,7 @@ public class SVFrame extends JFrame {
             String maSV = sinhVien.getMaSV();
             
             // Sử dụng phương thức lọc mới
-            List<Diem> listDiem = diemDao.getDiemBySinhVienTheoKyNam(maSV, hocKy, namHoc);
+            List<Diem> listDiem = diemService.getDiemBySinhVienTheoKyNam(maSV, hocKy, namHoc);
 
             if (listDiem.isEmpty()) {
                 JOptionPane.showMessageDialog(this, 
@@ -1256,9 +1257,9 @@ public class SVFrame extends JFrame {
             }
 
             for (Diem diem : listDiem) {
-                LopHocPhan lhp = lopHocPhanDao.getLopHocPhanByMaLop(diem.getMaLop());
+                LopHocPhan lhp = lopHocPhanService.getLopHocPhanByMaLop(diem.getMaLop());
                 if (lhp != null) {
-                    MonHoc mh = monHocDao.getMonHocById(lhp.getMaMH());
+                    MonHoc mh = monHocService.getMonHocById(lhp.getMaMH());
 
                     model.addRow(new Object[]{
                             diem.getMaLop(),
@@ -1308,9 +1309,9 @@ public class SVFrame extends JFrame {
             // Lấy danh sách điểm theo bộ lọc
             List<Diem> listDiem;
             if ("Tất cả".equals(hocKy) && "Tất cả".equals(namHoc)) {
-                listDiem = diemDao.getDiemBySinhVien(sinhVien.getMaSV());
+                listDiem = diemService.getDiemBySinhVien(sinhVien.getMaSV());
             } else {
-                listDiem = diemDao.getDiemBySinhVienTheoKyNam(sinhVien.getMaSV(), hocKy, namHoc);
+                listDiem = diemService.getDiemBySinhVienTheoKyNam(sinhVien.getMaSV(), hocKy, namHoc);
             }
 
             double tongDiemNhan = 0.0; // Σ(điểm × tín chỉ)
@@ -1320,10 +1321,10 @@ public class SVFrame extends JFrame {
                 // Chỉ tính những môn có điểm tổng kết
                 if (diem.getDiemTongKet() != null) {
                     // Lấy thông tin lớp học phần
-                    LopHocPhan lhp = lopHocPhanDao.getLopHocPhanByMaLop(diem.getMaLop());
+                    LopHocPhan lhp = lopHocPhanService.getLopHocPhanByMaLop(diem.getMaLop());
                     if (lhp != null) {
                         // Lấy thông tin môn học để biết số tín chỉ
-                        MonHoc mh = monHocDao.getMonHocById(lhp.getMaMH());
+                        MonHoc mh = monHocService.getMonHocById(lhp.getMaMH());
                         if (mh != null) {
                             int tinChi = mh.getSoTinChi();
                             float diemTK = diem.getDiemTongKet();
