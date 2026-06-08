@@ -1,0 +1,669 @@
+{
+  "info": {
+    "_postman_id": "autotest-v6",
+    "name": "Student Management - Kiem Thu Tu Dong",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "DANG NHAP",
+      "item": [
+        {
+          "name": "TC_DN - Dang Nhap (Data-Driven)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var tcId = pm.iterationData.get('tc_id');",
+                  "var expectedSuccess = pm.iterationData.get('expected_success');",
+                  "var expectedLoai = pm.iterationData.get('expected_loai');",
+                  "var expectedStatus = parseInt(pm.iterationData.get('expected_status'));",
+                  "pm.test('[' + tcId + '] HTTP Status = ' + expectedStatus, function () { pm.response.to.have.status(expectedStatus); });",
+                  "try {",
+                  "  var jsonBody = pm.response.json();",
+                  "  if (jsonBody.success !== undefined) {",
+                  "    pm.test('[' + tcId + '] success = ' + expectedSuccess, function () {",
+                  "      pm.expect(jsonBody.success).to.eql(expectedSuccess === 'true' || expectedSuccess === true);",
+                  "    });",
+                  "  } else {",
+                  "    pm.test('[' + tcId + '] response la loi he thong (no success field)', function () {",
+                  "      pm.expect(expectedSuccess === 'false' || expectedSuccess === false).to.be.true;",
+                  "    });",
+                  "  }",
+                  "} catch(e) {",
+                  "  pm.test('[' + tcId + '] response khong phai JSON - expected error', function () {",
+                  "    pm.expect(expectedSuccess === 'false' || expectedSuccess === false).to.be.true;",
+                  "  });",
+                  "}",
+                  "if ((expectedSuccess === 'true' || expectedSuccess === true) && expectedLoai && expectedLoai !== '') {",
+                  "  pm.test('[' + tcId + '] loaiNguoiDung = ' + expectedLoai, function () {",
+                  "    pm.expect(pm.response.json().loaiNguoiDung).to.eql(expectedLoai);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "QUAN LY SINH VIEN",
+      "item": [
+        {
+          "name": "TC_SV_01+02 - Them Sinh Vien (Data-Driven)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var tcId = pm.iterationData.get('tc_id');",
+                  "var expectedSuccess = pm.iterationData.get('expected_success');",
+                  "var expectedStatus = parseInt(pm.iterationData.get('expected_status'));",
+                  "pm.test('[' + tcId + '] HTTP Status = ' + expectedStatus, function () { pm.response.to.have.status(expectedStatus); });",
+                  "pm.test('[' + tcId + '] success = ' + expectedSuccess, function () { pm.expect(pm.response.json().success).to.eql(expectedSuccess === \"true\" || expectedSuccess === true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maSV\": \"{{ma_sv}}\",\n  \"hoTen\": \"{{ho_ten}}\",\n  \"gioiTinh\": \"{{gioi_tinh}}\",\n  \"ngaySinh\": \"{{ngay_sinh}}\",\n  \"email\": \"{{email}}\",\n  \"soDienThoai\": \"{{so_dien_thoai}}\",\n  \"diaChi\": \"{{dia_chi}}\",\n  \"maKhoa\": \"{{ma_khoa}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/students",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "students"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_SV_03 - Lay Sinh Vien Theo Ma (SV001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_SV_03] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_SV_03] maSV = SV001', function () { pm.expect(pm.response.json().maSV).to.eql('SV001'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/students/SV001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "students",
+                "SV001"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_SV_04 - Lay Sinh Vien Khong Ton Tai",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_SV_04] HTTP Status = 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/students/SV_KHONG_TON_TAI",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "students",
+                "SV_KHONG_TON_TAI"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_SV_05 - Xoa Sinh Vien (SV101)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_SV_05] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_SV_05] success = true', function () { pm.expect(pm.response.json().success).to.be.true; });"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.info.iteration > 0) { pm.execution.skipRequest(); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/students/SV101",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "students",
+                "SV101"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "QUAN LY GIANG VIEN",
+      "item": [
+        {
+          "name": "TC_GV_01 - Lay Danh Sach Giang Vien",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_GV_01] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_GV_01] Response la mang', function () { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('[TC_GV_01] Co it nhat 1 giang vien', function () { pm.expect(pm.response.json().length).to.be.at.least(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teachers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teachers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_GV_02+03 - Them Giang Vien (Data-Driven)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var tcId = pm.iterationData.get('tc_id');",
+                  "var expectedSuccess = pm.iterationData.get('expected_success');",
+                  "var expectedStatus = parseInt(pm.iterationData.get('expected_status'));",
+                  "pm.test('[' + tcId + '] HTTP Status = ' + expectedStatus, function () { pm.response.to.have.status(expectedStatus); });",
+                  "pm.test('[' + tcId + '] success = ' + expectedSuccess, function () { pm.expect(pm.response.json().success).to.eql(expectedSuccess === \"true\" || expectedSuccess === true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maGV\": \"{{ma_gv}}\",\n  \"hoTen\": \"{{ho_ten}}\",\n  \"email\": \"{{email}}\",\n  \"soDienThoai\": \"{{so_dien_thoai}}\",\n  \"maKhoa\": \"{{ma_khoa}}\",\n  \"tenDangNhap\": \"{{ten_dang_nhap}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teachers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teachers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_GV_04 - Lay Giang Vien Theo Ma (GV001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_GV_04] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_GV_04] maGV = GV001', function () { pm.expect(pm.response.json().maGV).to.eql('GV001'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teachers/GV001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teachers",
+                "GV001"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_GV_05 - Xoa Giang Vien (GV006)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_GV_05] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_GV_05] success = true', function () { pm.expect(pm.response.json().success).to.be.true; });"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.info.iteration > 0) { pm.execution.skipRequest(); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teachers/GV006",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teachers",
+                "GV006"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "QUAN LY MON HOC",
+      "item": [
+        {
+          "name": "TC_MH_01 - Lay Danh Sach Mon Hoc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_MH_01] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_MH_01] Response la mang', function () { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('[TC_MH_01] Co it nhat 1 mon hoc', function () { pm.expect(pm.response.json().length).to.be.at.least(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subjects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subjects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_MH_02+03 - Them Mon Hoc (Data-Driven)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var tcId = pm.iterationData.get('tc_id');",
+                  "var expectedSuccess = pm.iterationData.get('expected_success');",
+                  "var expectedStatus = parseInt(pm.iterationData.get('expected_status'));",
+                  "pm.test('[' + tcId + '] HTTP Status = ' + expectedStatus, function () { pm.response.to.have.status(expectedStatus); });",
+                  "pm.test('[' + tcId + '] success = ' + expectedSuccess, function () { pm.expect(pm.response.json().success).to.eql(expectedSuccess === \"true\" || expectedSuccess === true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maMH\": \"{{ma_mh}}\",\n  \"tenMH\": \"{{ten_mh}}\",\n  \"soTinChi\": {{so_tin_chi}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/subjects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subjects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_MH_04 - Lay Mon Hoc Theo Ma (JAVA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_MH_04] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_MH_04] maMH = JAVA', function () { pm.expect(pm.response.json().maMH).to.eql('JAVA'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subjects/JAVA",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subjects",
+                "JAVA"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_MH_05 - Lay Mon Hoc Khong Ton Tai",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_MH_05] HTTP Status = 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subjects/MH_KHONG_TON_TAI",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subjects",
+                "MH_KHONG_TON_TAI"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_MH_06 - Xoa Mon Hoc (TEST01)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_MH_06] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_MH_06] success = true', function () { pm.expect(pm.response.json().success).to.be.true; });"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.info.iteration > 0) { pm.execution.skipRequest(); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subjects/TEST01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "subjects",
+                "TEST01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "QUAN LY DIEM",
+      "item": [
+        {
+          "name": "TC_DM_01 - Lay Danh Sach Diem",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_DM_01] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_DM_01] Response la mang', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/grades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "grades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_DM_02+03 - Them Diem (Data-Driven)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var tcId = pm.iterationData.get('tc_id');",
+                  "var expectedSuccess = pm.iterationData.get('expected_success');",
+                  "var expectedStatus = parseInt(pm.iterationData.get('expected_status'));",
+                  "pm.test('[' + tcId + '] HTTP Status = ' + expectedStatus, function () { pm.response.to.have.status(expectedStatus); });",
+                  "pm.test('[' + tcId + '] success = ' + expectedSuccess, function () { pm.expect(pm.response.json().success).to.eql(expectedSuccess === \"true\" || expectedSuccess === true); });",
+                  "if (expectedSuccess === 'true') {",
+                  "  pm.test('[' + tcId + '] Co diemTongKet', function () { pm.expect(pm.response.json().data.diemTongKet).to.not.be.undefined; });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maSV\": \"{{ma_sv}}\",\n  \"maLop\": \"{{ma_lop}}\",\n  \"diemQuaTrinh\": {{diem_qt}},\n  \"diemGiuaKy\": {{diem_gk}},\n  \"diemCuoiKy\": {{diem_ck}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/grades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "grades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_DM_04 - Lay Diem Theo Sinh Vien (SV001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_DM_04] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_DM_04] Response la mang', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/grades/student/SV001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "grades",
+                "student",
+                "SV001"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC_DM_05 - Lay Diem Theo Lop (JAVA001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[TC_DM_05] HTTP Status = 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('[TC_DM_05] Response la mang', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/grades/class/JAVA001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "grades",
+                "class",
+                "JAVA001"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

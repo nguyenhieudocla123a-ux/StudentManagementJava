@@ -1,0 +1,10 @@
+﻿tc_id,mo_ta,username,password,expected_success,expected_loai,expected_status,actual_status,actual_success,ket_qua
+TC_DN_01,Dang nhap Admin dung,admin,admin123,true,Admin,200,,,
+TC_DN_02,Dang nhap Giang vien dung,GV001,123456,true,GiangVien,200,,,
+TC_DN_03,Dang nhap Sinh vien dung,SV001,123456,true,SinhVien,200,,,
+TC_DN_04,Sai mat khau - Admin,admin,saimatkhau,false,,401,,,
+TC_DN_05,Sai mat khau - SV,SV001,wrongpass,false,,401,,,
+TC_DN_06,Tai khoan khong ton tai,userkhongtontai,123456,false,,401,,,
+TC_DN_07,Username rong,,123456,false,,401,,,
+TC_DN_08,Password rong,admin,,false,,401,,,
+TC_DN_09,Username co ki tu dac biet,admin!@*,admin123,false,,401,,,

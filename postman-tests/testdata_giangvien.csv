@@ -1,0 +1,13 @@
+tc_id,mo_ta,ma_gv,ho_ten,ten_dang_nhap,email,so_dien_thoai,ma_khoa,expected_status,expected_success
+TC_GV_01,Them giang vien hop le,GV101,Nguyen Thi Test,nguyenthitest,gvtest@edu.vn,0971234567,CNTT,200,true
+TC_GV_02,Ma giang vien da ton tai,GV001,Pham Van D,phamvand,pvd@edu.vn,0982345678,CNTT,400,false
+TC_GV_03,Them GV - thieu ten dang nhap,GV102,Tran Thi E,,tte@edu.vn,0993456789,KT,400,false
+TC_GV_04,Them GV - ten dang nhap da ton tai,GV103,Le Van F,nguyenthitest,lvf@edu.vn,0904567890,QTKD,400,false
+TC_GV_05,Them GV - email khong hop le,GV104,Hoang Thi G,hoangthig,invalid-email,0915678901,NN,400,false
+TC_GV_06,Them GV - thieu thong tin bat buoc,GV105,,phamvanh,pvh@edu.vn,0926789012,CNTT,400,false
+TC_GV_07,Cap nhat giang vien hop le,GV001,Pham Van D Updated,phamvand_updated,pvd_new@edu.vn,0982345999,KT,200,true
+TC_GV_08,Lay giang vien theo ma hop le,GV001,,,,,,,200,true
+TC_GV_09,Lay giang vien - ma khong ton tai,GV999,,,,,,,404,false
+TC_GV_10,Xoa giang vien vua them,GV101,,,,,,,200,true
+TC_GV_11,Xoa giang vien - ma khong ton tai,GV999,,,,,,,404,false
+TC_GV_12,Tim kiem giang vien theo ten,,,Test,,,,,200,true

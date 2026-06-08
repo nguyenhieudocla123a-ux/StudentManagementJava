@@ -1,0 +1,13 @@
+tc_id,mo_ta,ma_sv,ho_ten,ten_dang_nhap,gioi_tinh,ngay_sinh,email,so_dien_thoai,dia_chi,ma_khoa,expected_status,expected_success
+TC_SV_01,Them sinh vien hop le,SV101,Nguyen Van Test,nguyenvantest,Nam,1/15/2000,test01@edu.vn,901234567,Ha Noi,CNTT,200,TRUE
+TC_SV_02,Ma sinh vien da ton tai,SV001,Nguyen Van A,nguyenvana,Nam,5/20/2001,nva@edu.vn,912345678,HCM,CNTT,400,FALSE
+TC_SV_03,Them SV - thieu ten dang nhap,SV102,Tran Thi B,,Nu,3/10/2002,ttb@edu.vn,923456789,Da Nang,KT,400,FALSE
+TC_SV_04,Them SV - ten dang nhap da ton tai,SV103,Le Van C,nguyenvantest,Nam,7/25/2001,lvc@edu.vn,934567890,Hue,CNTT,400,FALSE
+TC_SV_05,Them SV - email khong hop le,SV104,Pham Thi D,phamthid,Nu,9/30/2003,invalid-email,945678901,Can Tho,QTKD,400,FALSE
+TC_SV_06,Them SV - ngay sinh sai dinh dang,SV105,Hoang Van E,hoangvane,Nam,30/12/2002,hve@edu.vn,956789012,Hai Phong,NN,400,FALSE
+TC_SV_07,Them SV - thieu thong tin bat buoc,SV106,,tranvanf,Nam,11/20/2001,tvf@edu.vn,967890123,Vinh,CNTT,400,FALSE
+TC_SV_08,Cap nhat sinh vien hop le,SV001,Nguyen Van A Updated,nguyenvana_updated,Nam,5/20/2001,nva_new@edu.vn,912345999,Ha Noi Updated,CNTT,200,TRUE
+TC_SV_09,Lay sinh vien theo ma hop le,SV001,,,,,,,,,200,TRUE
+TC_SV_10,Lay sinh vien - ma khong ton tai,SV999,,,,,,,,,404,FALSE
+TC_SV_11,Xoa sinh vien vua them,SV101,,,,,,,,,200,TRUE
+TC_SV_12,Xoa sinh vien - ma khong ton tai,SV999,,,,,,,,,404,FALSE

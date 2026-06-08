@@ -1,0 +1,3 @@
+tc_id,mo_ta,ma_mh,ten_mh,so_tin_chi,expected_success,expected_status
+TC_MH_01,Them mon hoc hop le,MH_TEST01,Mon Hoc Test,3,TRUE,200
+TC_MH_02,Them MH trung ma,MH001,Trung Ma,3,FALSE,400

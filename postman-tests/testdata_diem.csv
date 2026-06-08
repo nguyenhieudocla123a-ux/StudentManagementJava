@@ -1,0 +1,3 @@
+tc_id,mo_ta,ma_sv,ma_lop,diem_qt,diem_gk,diem_ck,expected_success,expected_status
+TC_DM_01,Them diem hop le,SV001,L001,8,7.5,8.5,True,200
+TC_DM_02,Them diem khac,SV002,L001,7,6.5,7.0,True,200

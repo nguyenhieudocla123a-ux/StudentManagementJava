@@ -1,0 +1,19 @@
+{
+  "id": "production-env",
+  "name": "Production - Render",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://studentmanagementappbackend-2.onrender.com/api",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

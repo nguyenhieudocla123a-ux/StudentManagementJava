@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: student-management-api
+    env: java
+    buildCommand: mvn clean install -DskipTests
+    startCommand: java -jar target/api-server-1.0.0.jar
+    envVars:
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx512m -Xms256m
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SERVER_PORT
+        value: 8080

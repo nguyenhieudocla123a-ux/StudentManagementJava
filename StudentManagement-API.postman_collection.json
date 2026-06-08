@@ -1,0 +1,666 @@
+{
+	"info": {
+		"_postman_id": "student-management-api",
+		"name": "Student Management API",
+		"description": "API Collection for Student Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"item": [
+				{
+					"name": "Login - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Login successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.loaiNguoiDung).to.eql(\"Admin\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"SV001\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Teacher",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"GV001\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👨‍🎓 Students",
+			"item": [
+				{
+					"name": "Get All Students",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/sinhvien",
+							"host": ["{{base_url}}"],
+							"path": ["sinhvien"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/sinhvien/SV001",
+							"host": ["{{base_url}}"],
+							"path": ["sinhvien", "SV001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maSinhVien\": \"SV999\",\n  \"hoTen\": \"Test Student\",\n  \"ngaySinh\": \"2000-01-01\",\n  \"gioiTinh\": \"Nam\",\n  \"diaChi\": \"Test Address\",\n  \"soDienThoai\": \"0999999999\",\n  \"email\": \"test@email.com\",\n  \"maKhoa\": \"CNTT\",\n  \"tenDangNhap\": \"sv999\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/sinhvien",
+							"host": ["{{base_url}}"],
+							"path": ["sinhvien"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maSinhVien\": \"SV999\",\n  \"hoTen\": \"Updated Student Name\",\n  \"ngaySinh\": \"2000-01-01\",\n  \"gioiTinh\": \"Nam\",\n  \"diaChi\": \"Updated Address\",\n  \"soDienThoai\": \"0999999999\",\n  \"email\": \"updated@email.com\",\n  \"maKhoa\": \"CNTT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/sinhvien/SV999",
+							"host": ["{{base_url}}"],
+							"path": ["sinhvien", "SV999"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Student",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/sinhvien/SV999",
+							"host": ["{{base_url}}"],
+							"path": ["sinhvien", "SV999"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👨‍🏫 Teachers",
+			"item": [
+				{
+					"name": "Get All Teachers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/giangvien",
+							"host": ["{{base_url}}"],
+							"path": ["giangvien"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Teacher by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/giangvien/GV001",
+							"host": ["{{base_url}}"],
+							"path": ["giangvien", "GV001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Teacher",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maGiangVien\": \"GV999\",\n  \"hoTen\": \"Test Teacher\",\n  \"ngaySinh\": \"1980-01-01\",\n  \"gioiTinh\": \"Nam\",\n  \"diaChi\": \"Test Address\",\n  \"soDienThoai\": \"0999999999\",\n  \"email\": \"teacher@email.com\",\n  \"maKhoa\": \"CNTT\",\n  \"hocVi\": \"Thạc sĩ\",\n  \"chucVu\": \"Giảng viên\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/giangvien",
+							"host": ["{{base_url}}"],
+							"path": ["giangvien"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Teacher",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maGiangVien\": \"GV999\",\n  \"hoTen\": \"Updated Teacher Name\",\n  \"ngaySinh\": \"1980-01-01\",\n  \"gioiTinh\": \"Nam\",\n  \"diaChi\": \"Updated Address\",\n  \"soDienThoai\": \"0999999999\",\n  \"email\": \"updated@email.com\",\n  \"maKhoa\": \"CNTT\",\n  \"hocVi\": \"Tiến sĩ\",\n  \"chucVu\": \"Phó Giáo sư\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/giangvien/GV999",
+							"host": ["{{base_url}}"],
+							"path": ["giangvien", "GV999"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Teacher",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/giangvien/GV999",
+							"host": ["{{base_url}}"],
+							"path": ["giangvien", "GV999"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📚 Subjects",
+			"item": [
+				{
+					"name": "Get All Subjects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/monhoc",
+							"host": ["{{base_url}}"],
+							"path": ["monhoc"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subject by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/monhoc/MH001",
+							"host": ["{{base_url}}"],
+							"path": ["monhoc", "MH001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Subject",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maMonHoc\": \"MH999\",\n  \"tenMonHoc\": \"Test Subject\",\n  \"soTinChi\": 3,\n  \"loaiMonHoc\": \"Tự chọn\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/monhoc",
+							"host": ["{{base_url}}"],
+							"path": ["monhoc"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subject",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maMonHoc\": \"MH999\",\n  \"tenMonHoc\": \"Updated Subject\",\n  \"soTinChi\": 4,\n  \"loaiMonHoc\": \"Bắt buộc\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/monhoc/MH999",
+							"host": ["{{base_url}}"],
+							"path": ["monhoc", "MH999"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subject",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/monhoc/MH999",
+							"host": ["{{base_url}}"],
+							"path": ["monhoc", "MH999"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📖 Classes",
+			"item": [
+				{
+					"name": "Get All Classes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/lophocphan",
+							"host": ["{{base_url}}"],
+							"path": ["lophocphan"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Classes by Subject",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/lophocphan/monhoc/MH001",
+							"host": ["{{base_url}}"],
+							"path": ["lophocphan", "monhoc", "MH001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Classes by Teacher",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/lophocphan/giangvien/GV001",
+							"host": ["{{base_url}}"],
+							"path": ["lophocphan", "giangvien", "GV001"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📊 Grades",
+			"item": [
+				{
+					"name": "Get All Grades",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/grades",
+							"host": ["{{base_url}}"],
+							"path": ["grades"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Grades by Student",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/grades/student/SV001",
+							"host": ["{{base_url}}"],
+							"path": ["grades", "student", "SV001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Grades by Class",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/grades/class/LHP001",
+							"host": ["{{base_url}}"],
+							"path": ["grades", "class", "LHP001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Grade",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maSV\": \"SV001\",\n  \"maLop\": \"LHP001\",\n  \"diemQuaTrinh\": 8.0,\n  \"diemGiuaKy\": 7.5,\n  \"diemCuoiKy\": 9.0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/grades",
+							"host": ["{{base_url}}"],
+							"path": ["grades"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Grade",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maSV\": \"SV001\",\n  \"maLop\": \"LHP001\",\n  \"diemQuaTrinh\": 9.0,\n  \"diemGiuaKy\": 8.5,\n  \"diemCuoiKy\": 9.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/grades/1",
+							"host": ["{{base_url}}"],
+							"path": ["grades", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Grade",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/grades/1",
+							"host": ["{{base_url}}"],
+							"path": ["grades", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📝 Registrations",
+			"item": [
+				{
+					"name": "Get All Registrations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dangkylop",
+							"host": ["{{base_url}}"],
+							"path": ["dangkylop"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Registrations by Student",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dangkylop/sinhvien/SV001",
+							"host": ["{{base_url}}"],
+							"path": ["dangkylop", "sinhvien", "SV001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Registrations by Class",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dangkylop/lophocphan/LHP001",
+							"host": ["{{base_url}}"],
+							"path": ["dangkylop", "lophocphan", "LHP001"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🏫 Departments",
+			"item": [
+				{
+					"name": "Get All Departments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/khoa",
+							"host": ["{{base_url}}"],
+							"path": ["khoa"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Department by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/khoa/CNTT",
+							"host": ["{{base_url}}"],
+							"path": ["khoa", "CNTT"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Department",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maKhoa\": \"TEST\",\n  \"tenKhoa\": \"Khoa Test\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/khoa",
+							"host": ["{{base_url}}"],
+							"path": ["khoa"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Department",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maKhoa\": \"TEST\",\n  \"tenKhoa\": \"Khoa Test Updated\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/khoa/TEST",
+							"host": ["{{base_url}}"],
+							"path": ["khoa", "TEST"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Department",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/khoa/TEST",
+							"host": ["{{base_url}}"],
+							"path": ["khoa", "TEST"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		}
+	]
+}
