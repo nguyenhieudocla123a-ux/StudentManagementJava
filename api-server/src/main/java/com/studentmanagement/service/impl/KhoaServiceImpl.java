@@ -5,6 +5,7 @@ import com.studentmanagement.dto.response.KhoaResponse;
 import com.studentmanagement.entity.Khoa;
 import com.studentmanagement.exception.BadRequestException;
 import com.studentmanagement.exception.ResourceNotFoundException;
+import com.studentmanagement.mapper.KhoaMapper;
 import com.studentmanagement.repository.KhoaRepository;
 import com.studentmanagement.service.KhoaService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class KhoaServiceImpl implements KhoaService {
 
     private final KhoaRepository khoaRepository;
+    private final KhoaMapper khoaMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -31,7 +33,7 @@ public class KhoaServiceImpl implements KhoaService {
         log.info("Lấy tất cả khoa");
         return khoaRepository.findAll()
             .stream()
-            .map(this::convertToResponse)
+            .map(khoaMapper::toResponse)
             .collect(Collectors.toList());
     }
 
@@ -40,7 +42,7 @@ public class KhoaServiceImpl implements KhoaService {
     public Page<KhoaResponse> getAllKhoaPaged(Pageable pageable) {
         log.info("Lấy khoa phân trang: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
         return khoaRepository.findAll(pageable)
-            .map(this::convertToResponse);
+            .map(khoaMapper::toResponse);
     }
 
     @Override
@@ -49,7 +51,7 @@ public class KhoaServiceImpl implements KhoaService {
         log.info("Lấy khoa: {}", maKhoa);
         Khoa khoa = khoaRepository.findById(maKhoa)
             .orElseThrow(() -> new ResourceNotFoundException("Khoa", "mã", maKhoa));
-        return convertToResponse(khoa);
+        return khoaMapper.toResponse(khoa);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class KhoaServiceImpl implements KhoaService {
         log.info("Tìm kiếm khoa: {}", tenKhoa);
         return khoaRepository.findByTenKhoa(tenKhoa)
             .stream()
-            .map(this::convertToResponse)
+            .map(khoaMapper::toResponse)
             .collect(Collectors.toList());
     }
 
@@ -74,14 +76,11 @@ public class KhoaServiceImpl implements KhoaService {
             throw new BadRequestException("Tên khoa '" + request.getTenKhoa() + "' đã tồn tại");
         }
 
-        Khoa khoa = new Khoa();
-        khoa.setMaKhoa(request.getMaKhoa());
-        khoa.setTenKhoa(request.getTenKhoa());
-
+        Khoa khoa = khoaMapper.toEntity(request);
         Khoa saved = khoaRepository.save(khoa);
         log.info("Tạo khoa thành công: {}", saved.getMaKhoa());
 
-        return convertToResponse(saved);
+        return khoaMapper.toResponse(saved);
     }
 
     @Override
@@ -91,12 +90,11 @@ public class KhoaServiceImpl implements KhoaService {
         Khoa khoa = khoaRepository.findById(maKhoa)
             .orElseThrow(() -> new ResourceNotFoundException("Khoa", "mã", maKhoa));
 
-        khoa.setTenKhoa(request.getTenKhoa());
-
+        khoaMapper.updateEntityFromRequest(request, khoa);
         Khoa updated = khoaRepository.save(khoa);
         log.info("Cập nhật khoa thành công: {}", updated.getMaKhoa());
 
-        return convertToResponse(updated);
+        return khoaMapper.toResponse(updated);
     }
 
     @Override
@@ -108,12 +106,5 @@ public class KhoaServiceImpl implements KhoaService {
 
         khoaRepository.delete(khoa);
         log.info("Xóa khoa thành công: {}", maKhoa);
-    }
-
-    private KhoaResponse convertToResponse(Khoa khoa) {
-        return new KhoaResponse(
-            khoa.getMaKhoa(),
-            khoa.getTenKhoa()
-        );
     }
 }

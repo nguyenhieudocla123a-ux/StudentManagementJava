@@ -5,6 +5,7 @@ import com.studentmanagement.dto.response.MonHocResponse;
 import com.studentmanagement.entity.MonHoc;
 import com.studentmanagement.exception.BadRequestException;
 import com.studentmanagement.exception.ResourceNotFoundException;
+import com.studentmanagement.mapper.MonHocMapper;
 import com.studentmanagement.repository.MonHocRepository;
 import com.studentmanagement.service.MonHocService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class MonHocServiceImpl implements MonHocService {
 
     private final MonHocRepository monHocRepository;
+    private final MonHocMapper monHocMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -31,7 +33,7 @@ public class MonHocServiceImpl implements MonHocService {
         log.info("Lấy tất cả môn học");
         return monHocRepository.findAll()
             .stream()
-            .map(this::convertToResponse)
+            .map(monHocMapper::toResponse)
             .collect(Collectors.toList());
     }
 

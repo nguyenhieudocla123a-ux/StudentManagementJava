@@ -8,18 +8,18 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Data
 @Entity
-@Table(name = "LOPHOCPHAN")
+@Table(name = "lophocphan")
 public class LopHocPhan {
     
     @Id
     @Column(name = "ma_lop")
-    private String maLop;  // ✅ Sửa từ maLopHocPhan → maLop
+    private String maLop;
     
     @Column(name = "ma_mh")
-    private String maMH;  // ✅ Sửa từ maMonHoc → maMH
+    private String maMH;
     
     @Column(name = "ma_gv")
-    private String maGV;  // ✅ Sửa từ maGiangVien → maGV
+    private String maGV;
     
     @Column(name = "hoc_ky")
     private String hocKy;
@@ -51,12 +51,4 @@ public class LopHocPhan {
     @Column(name = "ngay_ket_thuc_hoc")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate ngayKetThucHoc;
-    
-    @ManyToOne
-    @JoinColumn(name = "ma_mh", insertable = false, updatable = false)
-    private MonHoc monHoc;
-    
-    @ManyToOne
-    @JoinColumn(name = "ma_gv", insertable = false, updatable = false)
-    private GiangVien giangVien;
 }

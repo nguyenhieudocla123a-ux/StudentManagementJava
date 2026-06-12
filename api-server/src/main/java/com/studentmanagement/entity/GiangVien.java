@@ -6,12 +6,12 @@ import java.time.LocalDate;
 
 @Data
 @Entity
-@Table(name = "GIANGVIEN")
+@Table(name = "giangvien")
 public class GiangVien {
     
     @Id
     @Column(name = "ma_gv")
-    private String maGV;  // ✅ Sửa từ maGiangVien → maGV để khớp với Desktop App
+    private String maGV;
     
     @Column(name = "ho_ten")
     private String hoTen;
@@ -27,8 +27,4 @@ public class GiangVien {
     
     @Column(name = "ten_dang_nhap")
     private String tenDangNhap;
-    
-    @ManyToOne
-    @JoinColumn(name = "ma_khoa", insertable = false, updatable = false)
-    private Khoa khoa;
 }

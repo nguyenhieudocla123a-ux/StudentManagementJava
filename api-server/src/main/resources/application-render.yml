@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: student-management-api
+
+  datasource:
+    url: jdbc:postgresql://dpg-d8jofbuk1jcs73e03r5g-a.singapore-postgres.render.com:5432/student_management_db_r9gx
+    username: hieudeptrai
+    password: bKQRnxZQbR7GxmtESvrxMst22Dk3JZDb
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        globally_quoted_identifiers: true
+        # Tắt auto foreign key constraints để tránh lỗi thứ tự tạo bảng
+        hbm2ddl.auto_quote_keyword: true
+        # Cho phép Hibernate tạo bảng mà không bị lỗi foreign key
+        order_inserts: true
+        order_updates: true
+        jdbc.batch_size: 20
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    com.studentmanagement: INFO
+    org.hibernate.SQL: WARN

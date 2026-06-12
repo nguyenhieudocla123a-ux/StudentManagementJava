@@ -11,26 +11,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Data
 @Entity
-@Table(name = "DANGKY_LOP")
+@Table(name = "dangky_lop")
 @IdClass(DangKyLop.DangKyLopId.class)
-@JsonIgnoreProperties({"sinhVien", "lopHocPhan"})
 public class DangKyLop {
     
     @Id
     @Column(name = "ma_sv")
-    private String maSV;  // ✅ Sửa từ maSinhVien → maSV
+    private String maSV;
     
     @Id
     @Column(name = "ma_lop")
-    private String maLop;  // ✅ Sửa từ maLopHocPhan → maLop
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_sv", insertable = false, updatable = false)
-    private SinhVien sinhVien;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_lop", insertable = false, updatable = false)
-    private LopHocPhan lopHocPhan;
+    private String maLop;
     
     @Column(name = "ngay_dang_ky")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -46,7 +37,7 @@ public class DangKyLop {
     // Composite Key Class
     @Data
     public static class DangKyLopId implements Serializable {
-        private String maSV;  // ✅ Sửa từ maSinhVien → maSV
-        private String maLop;  // ✅ Sửa từ maLopHocPhan → maLop
+        private String maSV;
+        private String maLop;
     }
 }

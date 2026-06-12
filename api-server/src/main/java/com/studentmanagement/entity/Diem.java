@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "DIEM")
+@Table(name = "diem")
 public class Diem {
     
     @Id
@@ -14,10 +14,10 @@ public class Diem {
     private Integer id;
     
     @Column(name = "ma_sv")
-    private String maSV;  // ✅ Sửa từ maSinhVien → maSV
+    private String maSV;
     
     @Column(name = "ma_lop")
-    private String maLop;  // ✅ Sửa từ maLopHocPhan → maLop
+    private String maLop;
     
     @Column(name = "diem_qua_trinh")
     private Double diemQuaTrinh;
@@ -36,12 +36,4 @@ public class Diem {
     
     @Column(name = "xep_loai")
     private String xepLoai;
-    
-    @ManyToOne
-    @JoinColumn(name = "ma_sv", insertable = false, updatable = false)
-    private SinhVien sinhVien;
-    
-    @ManyToOne
-    @JoinColumn(name = "ma_lop", insertable = false, updatable = false)
-    private LopHocPhan lopHocPhan;
 }

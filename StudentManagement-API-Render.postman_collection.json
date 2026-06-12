@@ -1,0 +1,753 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Student Management API - Render Production",
+		"description": "Complete API collection for Student Management System deployed on Render\n\nBase URL: https://studentmanagementappbackend-3.onrender.com/api\n\nAuthentication: JWT Bearer Token\n\n## Test Flow:\n1. Login with admin/admin123 to get JWT token\n2. Use token in Authorization header for protected endpoints\n3. Test all CRUD operations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test response",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Login successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.token).to.not.be.empty;",
+									"    ",
+									"    // Save token for other requests",
+									"    pm.globals.set(\"jwt_token\", jsonData.token);",
+									"    pm.globals.set(\"username\", jsonData.tenDangNhap);",
+									"    pm.globals.set(\"role\", jsonData.loaiNguoiDung);",
+									"});",
+									"",
+									"pm.test(\"Response has correct structure\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.expect(jsonData).to.have.property('tenDangNhap');",
+									"    pm.expect(jsonData).to.have.property('loaiNguoiDung');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with admin credentials to get JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Register - New Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Registration successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tenDangNhap\": \"testuser\",\n  \"matKhau\": \"password123\",\n  \"loaiNguoiDung\": \"SinhVien\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new account"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{username}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout and set status to offline"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for login, register, logout"
+		},
+		{
+			"name": "Sinh Viên (Students)",
+			"item": [
+				{
+					"name": "Get All Students",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is success\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/students",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students"
+							]
+						},
+						"description": "Get all students"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Students Paged",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/students/paged?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								"paged"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get students with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/students/SV001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								"SV001"
+							]
+						},
+						"description": "Get student by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Students",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/students/search?keyword=Nguyen",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "Nguyen"
+								}
+							]
+						},
+						"description": "Search students by name"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maSV\": \"SV999\",\n  \"hoTen\": \"Nguyen Van Test\",\n  \"ngaySinh\": \"2000-01-15\",\n  \"gioiTinh\": \"Nam\",\n  \"diaChi\": \"123 Test Street\",\n  \"soDienThoai\": \"0123456789\",\n  \"email\": \"test@example.com\",\n  \"maKhoa\": \"CNTT\",\n  \"tenDangNhap\": \"testuser\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/students",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students"
+							]
+						},
+						"description": "Create new student (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maSV\": \"SV999\",\n  \"hoTen\": \"Nguyen Van Test Updated\",\n  \"ngaySinh\": \"2000-01-15\",\n  \"gioiTinh\": \"Nam\",\n  \"diaChi\": \"456 Updated Street\",\n  \"soDienThoai\": \"0987654321\",\n  \"email\": \"updated@example.com\",\n  \"maKhoa\": \"CNTT\",\n  \"tenDangNhap\": \"testuser\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/students/SV999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								"SV999"
+							]
+						},
+						"description": "Update student (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/students/SV999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								"SV999"
+							]
+						},
+						"description": "Delete student (Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Student management endpoints"
+		},
+		{
+			"name": "Tài Khoản (Accounts)",
+			"item": [
+				{
+					"name": "Get All Accounts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/accounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts"
+							]
+						},
+						"description": "Get all accounts (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Account by Username",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/accounts/admin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"admin"
+							]
+						},
+						"description": "Get account by username (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tenDangNhap\": \"testuser\",\n  \"matKhau\": \"newpassword123\",\n  \"loaiNguoiDung\": \"SinhVien\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/testuser",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"testuser"
+							]
+						},
+						"description": "Update account (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/accounts/testuser",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"testuser"
+							]
+						},
+						"description": "Delete account (Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Account management endpoints (Admin only)"
+		},
+		{
+			"name": "Giảng Viên (Teachers)",
+			"item": [
+				{
+					"name": "Get All Teachers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/teachers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"teachers"
+							]
+						},
+						"description": "Get all teachers"
+					},
+					"response": []
+				}
+			],
+			"description": "Teacher management endpoints"
+		},
+		{
+			"name": "Môn Học (Subjects)",
+			"item": [
+				{
+					"name": "Get All Subjects",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/subjects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects"
+							]
+						},
+						"description": "Get all subjects"
+					},
+					"response": []
+				}
+			],
+			"description": "Subject management endpoints"
+		},
+		{
+			"name": "Lớp Học Phần (Classes)",
+			"item": [
+				{
+					"name": "Get All Classes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/classes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes"
+							]
+						},
+						"description": "Get all classes"
+					},
+					"response": []
+				}
+			],
+			"description": "Class management endpoints"
+		},
+		{
+			"name": "Khoa (Departments)",
+			"item": [
+				{
+					"name": "Get All Departments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/departments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"departments"
+							]
+						},
+						"description": "Get all departments"
+					},
+					"response": []
+				}
+			],
+			"description": "Department management endpoints"
+		},
+		{
+			"name": "Điểm (Grades)",
+			"item": [
+				{
+					"name": "Get All Grades",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/grades",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"grades"
+							]
+						},
+						"description": "Get all grades"
+					},
+					"response": []
+				}
+			],
+			"description": "Grade management endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-set base URL",
+					"pm.globals.set(\"base_url\", \"https://studentmanagementappbackend-3.onrender.com/api\");",
+					"",
+					"// Log request info",
+					"console.log(\"Making request to:\", pm.request.url.toString());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global response time test",
+					"pm.test(\"Response time is less than 30000ms (30s)\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+					"});",
+					"",
+					"// Log response info",
+					"console.log(\"Response status:\", pm.response.status);",
+					"console.log(\"Response time:\", pm.response.responseTime + \"ms\");"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://studentmanagementappbackend-3.onrender.com/api",
+			"type": "string"
+		}
+	]
+}
