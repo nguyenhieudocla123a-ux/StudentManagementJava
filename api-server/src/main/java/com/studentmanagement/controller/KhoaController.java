@@ -1,120 +1,97 @@
 package com.studentmanagement.controller;
 
-import com.studentmanagement.entity.Khoa;
-import com.studentmanagement.repository.KhoaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.studentmanagement.dto.request.KhoaCreateRequest;
+import com.studentmanagement.dto.response.ApiResponse;
+import com.studentmanagement.dto.response.KhoaResponse;
+import com.studentmanagement.service.KhoaService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/khoa")
+@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasAnyRole('Admin', 'GiangVien', 'SinhVien')")
 public class KhoaController {
 
-    @Autowired
-    private KhoaRepository khoaRepository;
+    private final KhoaService khoaService;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllKhoa() {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            List<Khoa> list = khoaRepository.findAll();
-            response.put("success", true);
-            response.put("message", "Lấy danh sách khoa thành công");
-            response.put("data", list);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+    public ResponseEntity<ApiResponse<List<KhoaResponse>>> getAllKhoa() {
+        log.info("GET /khoa - Lấy tất cả khoa");
+        List<KhoaResponse> khoas = khoaService.getAllKhoa();
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách khoa thành công", khoas));
+    }
+
+    /**
+     * Lấy khoa phân trang
+     * GET /khoa/paged?page=0&size=10
+     */
+    @GetMapping("/paged")
+    public ResponseEntity<ApiResponse<Page<KhoaResponse>>> getKhoaPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /khoa/paged - page={}, size={}", page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<KhoaResponse> khoas = khoaService.getAllKhoaPaged(pageable);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách khoa (phân trang) thành công", khoas));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getKhoaById(@PathVariable String id) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            Khoa khoa = khoaRepository.findById(id).orElse(null);
-            if (khoa != null) {
-                response.put("success", true);
-                response.put("message", "Lấy thông tin khoa thành công");
-                response.put("data", khoa);
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("success", false);
-                response.put("message", "Không tìm thấy khoa");
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+    public ResponseEntity<ApiResponse<KhoaResponse>> getKhoaById(@PathVariable String id) {
+        log.info("GET /khoa/{} - Lấy khoa theo mã", id);
+        KhoaResponse khoa = khoaService.getKhoaById(id);
+        return ResponseEntity.ok(ApiResponse.success("Lấy khoa thành công", khoa));
+    }
+
+    /**
+     * Tìm kiếm khoa theo tên
+     * GET /khoa/search?keyword=Công nghệ
+     */
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<KhoaResponse>>> searchKhoa(
+            @RequestParam String keyword) {
+        log.info("GET /khoa/search - keyword={}", keyword);
+        List<KhoaResponse> khoas = khoaService.searchByTenKhoa(keyword);
+        return ResponseEntity.ok(ApiResponse.success("Tìm kiếm khoa thành công", khoas));
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createKhoa(@RequestBody Khoa khoa) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            Khoa saved = khoaRepository.save(khoa);
-            response.put("success", true);
-            response.put("message", "Thêm khoa thành công");
-            response.put("data", saved);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<ApiResponse<KhoaResponse>> createKhoa(
+            @Valid @RequestBody KhoaCreateRequest request) {
+        log.info("POST /khoa - Tạo khoa mới: {}", request.getMaKhoa());
+        KhoaResponse khoa = khoaService.createKhoa(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success("Tạo khoa thành công", khoa));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateKhoa(@PathVariable String id, @RequestBody Khoa khoa) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            if (khoaRepository.existsById(id)) {
-                khoa.setMaKhoa(id);
-                Khoa updated = khoaRepository.save(khoa);
-                response.put("success", true);
-                response.put("message", "Cập nhật khoa thành công");
-                response.put("data", updated);
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("success", false);
-                response.put("message", "Không tìm thấy khoa");
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<ApiResponse<KhoaResponse>> updateKhoa(
+            @PathVariable String id,
+            @Valid @RequestBody KhoaCreateRequest request) {
+        log.info("PUT /khoa/{} - Cập nhật khoa", id);
+        KhoaResponse khoa = khoaService.updateKhoa(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật khoa thành công", khoa));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteKhoa(@PathVariable String id) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            if (khoaRepository.existsById(id)) {
-                khoaRepository.deleteById(id);
-                response.put("success", true);
-                response.put("message", "Xóa khoa thành công");
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("success", false);
-                response.put("message", "Không tìm thấy khoa");
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<ApiResponse<?>> deleteKhoa(@PathVariable String id) {
+        log.info("DELETE /khoa/{} - Xóa khoa", id);
+        khoaService.deleteKhoa(id);
+        return ResponseEntity.ok(ApiResponse.success("Xóa khoa thành công", null));
     }
 }
