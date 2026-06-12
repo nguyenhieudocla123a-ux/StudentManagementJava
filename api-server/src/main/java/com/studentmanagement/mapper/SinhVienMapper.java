@@ -19,8 +19,8 @@ public interface SinhVienMapper {
     
     /**
      * Convert Entity to Response DTO
+     * Simple mapping - entity fields match response fields
      */
-    @Mapping(target = "tenKhoa", source = "khoa.tenKhoa") // Map nested property
     SinhVienResponse toResponse(SinhVien sinhVien);
     
     /**
@@ -32,6 +32,5 @@ public interface SinhVienMapper {
      * Update existing entity with request data
      */
     @Mapping(target = "maSV", ignore = true) // Don't update primary key
-    @Mapping(target = "khoa", ignore = true) // Handle relationship separately
     void updateEntityFromRequest(SinhVienCreateRequest request, @MappingTarget SinhVien sinhVien);
 }
