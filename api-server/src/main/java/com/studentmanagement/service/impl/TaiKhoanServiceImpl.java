@@ -5,6 +5,7 @@ import com.studentmanagement.dto.response.TaiKhoanResponse;
 import com.studentmanagement.entity.TaiKhoan;
 import com.studentmanagement.exception.BadRequestException;
 import com.studentmanagement.exception.ResourceNotFoundException;
+import com.studentmanagement.mapper.TaiKhoanMapper;
 import com.studentmanagement.repository.TaiKhoanRepository;
 import com.studentmanagement.service.TaiKhoanService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class TaiKhoanServiceImpl implements TaiKhoanService {
 
     private final TaiKhoanRepository taiKhoanRepository;
+    private final TaiKhoanMapper taiKhoanMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -31,7 +33,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         log.info("Lấy tất cả tài khoản");
         return taiKhoanRepository.findAll()
             .stream()
-            .map(this::convertToResponse)
+            .map(taiKhoanMapper::toResponse)
             .collect(Collectors.toList());
     }
 
@@ -40,7 +42,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     public Page<TaiKhoanResponse> getAllTaiKhoanPaged(Pageable pageable) {
         log.info("Lấy tài khoản phân trang: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
         return taiKhoanRepository.findAll(pageable)
-            .map(this::convertToResponse);
+            .map(taiKhoanMapper::toResponse);
     }
 
     @Override
@@ -49,7 +51,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         log.info("Lấy tài khoản: {}", tenDangNhap);
         TaiKhoan taiKhoan = taiKhoanRepository.findById(tenDangNhap)
             .orElseThrow(() -> new ResourceNotFoundException("Tài khoản", "tên đăng nhập", tenDangNhap));
-        return convertToResponse(taiKhoan);
+        return taiKhoanMapper.toResponse(taiKhoan);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         return taiKhoanRepository.findAll()
             .stream()
             .filter(tk -> loaiNguoiDung.equals(tk.getLoaiNguoiDung()))
-            .map(this::convertToResponse)
+            .map(taiKhoanMapper::toResponse)
             .collect(Collectors.toList());
     }
 
@@ -67,20 +69,43 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     public TaiKhoanResponse createTaiKhoan(TaiKhoanCreateRequest request) {
         log.info("Tạo tài khoản mới: {}", request.getTenDangNhap());
 
-        if (taiKhoanRepository.existsById(request.getTenDangNhap())) {
+        // Validate input
+        if (request.getTenDangNhap() == null || request.getTenDangNhap().trim().isEmpty()) {
+            throw new BadRequestException("Tên đăng nhập không được để trống");
+        }
+        
+        if (request.getMatKhau() == null || request.getMatKhau().trim().isEmpty()) {
+            throw new BadRequestException("Mật khẩu không được để trống");
+        }
+
+        if (request.getLoaiNguoiDung() == null || request.getLoaiNguoiDung().trim().isEmpty()) {
+            throw new BadRequestException("Loại người dùng không được để trống");
+        }
+
+        // Check if account exists
+        if (taiKhoanRepository.existsById(request.getTenDangNhap().trim())) {
             throw new BadRequestException("Tên đăng nhập '" + request.getTenDangNhap() + "' đã tồn tại");
         }
 
-        TaiKhoan taiKhoan = new TaiKhoan();
-        taiKhoan.setTenDangNhap(request.getTenDangNhap());
-        taiKhoan.setMatKhau(request.getMatKhau());
-        taiKhoan.setLoaiNguoiDung(request.getLoaiNguoiDung());
-        taiKhoan.setOnlineStatus("Offline");
+        // Validate role
+        String role = request.getLoaiNguoiDung().trim();
+        if (!role.equals("Admin") && !role.equals("SinhVien") && !role.equals("GiangVien")) {
+            throw new BadRequestException("Loại người dùng không hợp lệ. Chỉ chấp nhận: Admin, SinhVien, GiangVien");
+        }
 
-        TaiKhoan saved = taiKhoanRepository.save(taiKhoan);
-        log.info("Tạo tài khoản thành công: {}", saved.getTenDangNhap());
+        try {
+            TaiKhoan taiKhoan = taiKhoanMapper.toEntity(request);
+            taiKhoan.setTenDangNhap(request.getTenDangNhap().trim());
+            taiKhoan.setLoaiNguoiDung(role);
+            
+            TaiKhoan saved = taiKhoanRepository.save(taiKhoan);
+            log.info("Tạo tài khoản thành công: {}", saved.getTenDangNhap());
 
-        return convertToResponse(saved);
+            return taiKhoanMapper.toResponse(saved);
+        } catch (Exception e) {
+            log.error("Lỗi khi tạo tài khoản: {}", e.getMessage(), e);
+            throw new BadRequestException("Không thể tạo tài khoản: " + e.getMessage());
+        }
     }
 
     @Override
@@ -90,13 +115,16 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         TaiKhoan taiKhoan = taiKhoanRepository.findById(tenDangNhap)
             .orElseThrow(() -> new ResourceNotFoundException("Tài khoản", "tên đăng nhập", tenDangNhap));
 
-        taiKhoan.setMatKhau(request.getMatKhau());
-        taiKhoan.setLoaiNguoiDung(request.getLoaiNguoiDung());
+        try {
+            taiKhoanMapper.updateEntityFromRequest(request, taiKhoan);
+            TaiKhoan updated = taiKhoanRepository.save(taiKhoan);
+            log.info("Cập nhật tài khoản thành công: {}", updated.getTenDangNhap());
 
-        TaiKhoan updated = taiKhoanRepository.save(taiKhoan);
-        log.info("Cập nhật tài khoản thành công: {}", updated.getTenDangNhap());
-
-        return convertToResponse(updated);
+            return taiKhoanMapper.toResponse(updated);
+        } catch (Exception e) {
+            log.error("Lỗi khi cập nhật tài khoản: {}", e.getMessage(), e);
+            throw new BadRequestException("Không thể cập nhật tài khoản: " + e.getMessage());
+        }
     }
 
     @Override
@@ -106,20 +134,17 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         TaiKhoan taiKhoan = taiKhoanRepository.findById(tenDangNhap)
             .orElseThrow(() -> new ResourceNotFoundException("Tài khoản", "tên đăng nhập", tenDangNhap));
 
-        taiKhoanRepository.delete(taiKhoan);
-        log.info("Xóa tài khoản thành công: {}", tenDangNhap);
+        try {
+            taiKhoanRepository.delete(taiKhoan);
+            log.info("Xóa tài khoản thành công: {}", tenDangNhap);
+        } catch (Exception e) {
+            log.error("Lỗi khi xóa tài khoản: {}", e.getMessage(), e);
+            throw new BadRequestException("Không thể xóa tài khoản: " + e.getMessage());
+        }
     }
 
     @Override
     public boolean existsTaiKhoan(String tenDangNhap) {
         return taiKhoanRepository.existsById(tenDangNhap);
-    }
-
-    private TaiKhoanResponse convertToResponse(TaiKhoan taiKhoan) {
-        return new TaiKhoanResponse(
-            taiKhoan.getTenDangNhap(),
-            taiKhoan.getLoaiNguoiDung(),
-            taiKhoan.getOnlineStatus()
-        );
     }
 }
