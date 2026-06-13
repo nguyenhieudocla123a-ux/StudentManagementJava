@@ -27,6 +27,38 @@ public class TaiKhoanController {
     private final TaiKhoanRepository taiKhoanRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @PostMapping
+    public ResponseEntity<Map<String, Object>> createAccount(@RequestBody TaiKhoanCreateRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Validate loại người dùng
+            String role = request.getLoaiNguoiDung();
+            if (role == null || 
+                (!role.equals("Admin") && 
+                 !role.equals("SinhVien") && 
+                 !role.equals("GiangVien"))) {
+                response.put("success", false);
+                response.put("message", "Loại người dùng không hợp lệ (Admin/SinhVien/GiangVien)");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Mã hóa mật khẩu
+            if (request.getMatKhau() != null && !request.getMatKhau().isEmpty()) {
+                request.setMatKhau(passwordEncoder.encode(request.getMatKhau()));
+            }
+
+            TaiKhoanResponse created = taiKhoanService.createTaiKhoan(request);
+            response.put("success", true);
+            response.put("message", "Tạo tài khoản thành công");
+            response.put("data", created);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Lỗi: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllAccounts() {
         Map<String, Object> response = new HashMap<>();

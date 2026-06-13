@@ -72,7 +72,7 @@ public class KhoaServiceImpl implements KhoaService {
             throw new BadRequestException("Mã khoa '" + request.getMaKhoa() + "' đã tồn tại");
         }
 
-        if (khoaRepository.findByTenKhoa(request.getTenKhoa()) != null) {
+        if (khoaRepository.findByTenKhoa(request.getTenKhoa()).isPresent()) {
             throw new BadRequestException("Tên khoa '" + request.getTenKhoa() + "' đã tồn tại");
         }
 

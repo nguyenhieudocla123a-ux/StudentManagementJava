@@ -2775,7 +2775,7 @@ public class AdFrame extends JFrame {
     private void themTaiKhoan() {
         JTextField txtUsername = new JTextField();
         JPasswordField txtPassword = new JPasswordField();
-        JComboBox<String> cboLoaiTK = new JComboBox<>(new String[]{"Admin", "Giangvien", "Sinhvien"});
+        JComboBox<String> cboLoaiTK = new JComboBox<>(new String[]{"Admin", "GiangVien", "SinhVien"});
 
         Object[] message = {
                 "Tên đăng nhập:", txtUsername,
